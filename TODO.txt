@@ -1,5 +1,0 @@
-return-värden för HaloList
-lägg till neutral-densitet i statistik
-ta bort mesh_x, mesh_y.
-använd fromfile i xfracfile och densityfile
-varför exception i velfile
