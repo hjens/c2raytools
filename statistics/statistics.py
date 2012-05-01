@@ -1,7 +1,12 @@
+#This file contains various useful statistical methods
+
 from numpy import *
 
-def idlskew(x):
-	''' IDL calculates the skewness in a slightly different way than Python. This routine uses the IDL definition '''
+def skewness(x):
+	''' 
+	Calculate the skewness of x
+	IDL calculates the skewness in a slightly different way than Python. This routine uses the IDL definition 
+	'''
         mx = mean(x)
         n = size(x)
         xdiff = x-mx
