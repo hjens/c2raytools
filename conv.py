@@ -27,12 +27,16 @@ def set_sim_constants(boxsize_cMpc):
 	boxsize = boxsize_cMpc
 	LB = boxsize/const.h	
 	if utils.flt_comp(boxsize, 425.):
+		utils.print_msg('Setting conversion factors for 425/h Mpc box')
 		nbox_fine = 10976
 	elif utils.flt_comp(boxsize, 114.):
+		utils.print_msg('Setting conversion factors for 114/h Mpc box')
 		nbox_fine = 6144
 	elif utils.flt_comp(boxsize, 64.):
+		utils.print_msg('Setting conversion factors for 64/h Mpc box')
 		nbox_fine = 3456
 	elif utils.flt_comp(boxsize, 37.):
+		utils.print_msg('Setting conversion factors for 37/h Mpc box')
 		nbox_fine = 2048
 	else:
 		raise Exception('Invalid boxsize (%.3f cMpc)' % boxsize_cMpc)

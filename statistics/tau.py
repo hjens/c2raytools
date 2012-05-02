@@ -1,6 +1,6 @@
-from cosm_constants import *
-def tau(ionfractions, redshifts):
+from .. import const
 
+def tau(ionfractions, redshifts):
 	if len(ionfractions) != len(redshifts):
 		print 'Incorrect length of ionfractions'
 		raise Exception()

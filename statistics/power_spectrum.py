@@ -1,5 +1,5 @@
-from numpy import *
-from constants import *
+import numpy as np
+from .. import const
 from scipy import fftpack
 
 
@@ -92,16 +92,3 @@ def cross_power_spectrum1d(input_array1_nd, input_array2_nd):
 	return radial_average(input_array, dim=len(input_array1_nd.shape))
 
 
-#TEST***************
-if __name__ == '__main__':
-	from density_file import *
-	dfile = DensityFile('/disk/sn-12/garrelt/Science/Simulations/Reionization/C2Ray_WMAP5/114Mpc_WMAP5/coarser_densities/halos_removed/7.059n_all.dat')
-	#Pk,k = power_spectrum1d(dfile.raw_density)
-	Pk,k = cross_power_spectrum1d(dfile.raw_density, dfile.raw_density)
-	
-	kanandata = loadtxt('/home/hjens/LyA/Power_spectrum/ps3dg.dat')
-
-	import pylab as pl
-	pl.loglog(k, Pk*k**3, 'r-')
-	pl.loglog(kanandata[:,0], kanandata[:,0]**3*kanandata[:,2], 'b-')
-	pl.show()

@@ -1,6 +1,6 @@
 #This file contains various useful statistical methods
 
-from numpy import *
+import numpy as np
 
 def skewness(x):
 	''' 
