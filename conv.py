@@ -18,13 +18,17 @@ tscale = 2.0/(3.0*np.sqrt(const.Omega0)*const.H0/const.Mpc*1.e5) # time scale, w
 velconvert = lambda z: lscale/tscale*(1.0+z)/1.e5
 
 def set_sim_constants(boxsize_cMpc):
-	'''This method will set the values of relevant constants depending on the simulation'''
+	'''This method will set the values of relevant constants depending on the simulation
+	boxsize_cMpc is the box size in cMpc/h
+	It can be 37, 64, 114 or '''
 	global boxsize, LB, nbox_fine, M_box, M_grid, lscale, tscale, velconvert
 
 	#hf.print_msg('Setting constants for boxsize=%.3f cMpc' % boxsize_cMpc)
 	boxsize = boxsize_cMpc
 	LB = boxsize/const.h	
-	if utils.flt_comp(boxsize, 114.):
+	if utils.flt_comp(boxsize, 425.):
+		nbox_fine = 10976
+	elif utils.flt_comp(boxsize, 114.):
 		nbox_fine = 6144
 	elif utils.flt_comp(boxsize, 64.):
 		nbox_fine = 3456
