@@ -26,6 +26,7 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, num_particles=10):
 	#Dimensions
 	mx,my,mz = dT.shape
 
+	utils.print_msg('Making velocity-distorted box...')
 	utils.print_msg('The redshift is %.3f' % redsh)
 	utils.print_msg('The box size is %.3f cMpc' % conv.LB)
 	
@@ -37,9 +38,13 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, num_particles=10):
 	#Make the distorted box
 	distbox = np.zeros((mx,my,mz))
 	part_dT = np.zeros(mx*num_particles)
+
+	last_percent = 0
 	for i in range(my):
-		if i%10 == 0:
-			print i
+		percent_done = int(float(i)/float(my)*100)
+		if percent_done%10 == 0 and percent_done != last_percent:
+			utils.print_msg('%d %%' % percent_done)
+			last_percent = percent_done
 		for j in range(mz):
 
 			#Take a 1D slice from the dT box
@@ -52,9 +57,10 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, num_particles=10):
 
 			#Calculate and apply redshift distortions
 			cell_length = conv.LB/float(mx)
-			temp_dr_slice = get_slice(dr,i,j)+cell_length/2
-			dr_slice = utils.get_interpolated_array(temp_dr_slice, len(partpos), 'linear')
-			dr_slice = np.roll(dr_slice,num_particles/10)
+			dr_slice_pad= get_slice(dr,i,j)
+			np.insert(dr_slice_pad,0,dr_slice_pad[-1])
+			dr_slice = utils.get_interpolated_array(dr_slice_pad, len(partpos), 'linear')
+			dr_slice = np.roll(dr_slice,num_particles/2)
 			partpos += dr_slice
 
 			#Boundary conditions
