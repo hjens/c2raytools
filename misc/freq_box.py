@@ -1,3 +1,5 @@
+#These methods are based on Garrelt's IDL routines
+
 from .. import const
 from .. import conv
 import numpy as np
@@ -114,29 +116,4 @@ def freq_box(xfrac_dir, dens_dir, z_low, cube_slices=100):
 
 
 
-#--------------------------------_TEST__-----------------------------------
-if __name__ == '__main__':
-	import cosm_constants as cc
-	import pylab as pl
-
-	xcube, dcube, dtcube, z = freq_box(cc.xfrac_dir, cc.density_dir, 9.0, 1000, beam_convolve=True)
-	dtslice = dtcube[0,:,:]
-	dslice = dcube[0,:,:]
-	xslice = xcube[0,:,:]
-
-	array(dtcube).dump('dt_cube.dat')
-	array(dslice).dump('d_slice.dat')
-	array(xslice).dump('x_slice.dat')
-	array(z).dump('dt_z.dat')
-
-	pl.figure()
-	pl.imshow(dtslice, extent = [z[0], z[-1], 0, cc.LB], aspect='auto')
-	pl.xlabel('z')
-	pl.ylabel('Mpc')
-
-	pl.figure()
-	pl.imshow(dslice, extent = [z[0], z[-1], 0, cc.LB], aspect='auto')
-	pl.xlabel('z')
-	pl.ylabel('Mpc')
-	pl.show()
 
