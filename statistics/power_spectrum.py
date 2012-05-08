@@ -81,7 +81,7 @@ def cross_power_spectrum_nd(input_array1, input_array2):
 
 def radial_average(input_array, dim=2, nbins=0):
 	''' Take an n-dimensional powerspectrum and return the radially averaged 
-	version
+	version. For internal use mostly.
 	Return P(k), k (Mpc^-1)'''
 	#TODO: use middle of k bins instead of edges, scale Pk correctly
 
@@ -94,7 +94,7 @@ def radial_average(input_array, dim=2, nbins=0):
 		center = np.array([(x.max()-x.min())/2.0, (x.max()-x.min())/2.0, (z.max()-z.min())/2.0])
 		r = np.sqrt((x - center[0])**2 + (y - center[1])**2 + (z-center[2])**2)
 	else:
-		print 'Check your dimensions!'
+		raise Exception( 'Check your dimensions!')
 
 	ind = np.argsort(r.flat) 			#indices of sorted array
 	r_sorted = r.flat[ind] 			#sorted radii

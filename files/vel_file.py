@@ -43,7 +43,7 @@ class VelocityFile:
 		try:
 			import os.path
 			name = os.path.split(filename)[1]
-			self.z = float(name.split('n_')[0])
+			self.z = float(name.split('v_')[0])
 		except:
 			utils.print_msg('Could not determine redshift from file name')
 			z = -1
