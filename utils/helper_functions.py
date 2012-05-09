@@ -15,7 +15,14 @@ def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None):
 	xfrac_files = glob.glob(os.path.join(xfrac_dir,'xfrac*.bin'))
 
 	#Get all z in the range
-	redshifts = [float(f.split('_')[-1][:-4]) for f in xfrac_files]
+	redshifts = []
+	for f in xfrac_files:
+		try:
+			z = float(f.split('_')[-1][:-4])
+			redshifts.append(z)
+		except: 
+			pass
+	#redshifts = [float(f.split('_')[-1][:-4]) for f in xfrac_files]
 	if min_z:
 		redshifts = filter(lambda x : x > min_z, redshifts)
 	if max_z:
@@ -34,7 +41,14 @@ def get_dens_redshifts(dens_dir, min_z = None, max_z = None):
 	dens_files = glob.glob(os.path.join(dens_dir,'*n_all.dat'))
 
 	#Get all z in the range
-	redshifts = [float(os.path.split(f)[1].split('n_')[0]) for f in dens_files]
+	redshifts = []
+	for f in dens_files:
+		try:
+			z = float(os.path.split(f)[1].split('n_')[0])
+			redshifts.append(z)
+		except:
+			pass
+	#redshifts = [float(os.path.split(f)[1].split('n_')[0]) for f in dens_files]
 	if min_z:
 		redshifts = filter(lambda x : x > min_z, redshifts)
 	if max_z:

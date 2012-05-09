@@ -16,6 +16,8 @@ def skewness(x):
 
 def mass_weighted_mean_xi(xi, rho):
 	''' Calculate the mass-weighted mean ionization fraction '''
+	xi = xi.astype('float64')
+	rho = rho.astype('float64')
 	return np.mean(xi*rho)/np.mean(rho)
 
                                                                
