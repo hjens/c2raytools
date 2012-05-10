@@ -144,5 +144,8 @@ def cross_power_spectrum1d(input_array1_nd, input_array2_nd):
 
 	return radial_average(input_array, dim=len(input_array1_nd.shape))
 
+def power_spectrum_mu(input_array, mubins):
+	pass
+
 
 
