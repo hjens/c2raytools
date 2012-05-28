@@ -37,9 +37,7 @@ def cross_power_spectrum_nd(input_array1, input_array2):
 	return power_spectrum
 
 
-
-
-def radial_average_fast(input_array, dim=2, nbins=0):
+def radial_average_fast(input_array, dim=2):
 	''' Take an n-dimensional powerspectrum and return the radially averaged 
 	version. For internal use mostly.
 	Return P(k), k (Mpc^-1)'''
@@ -74,6 +72,12 @@ def radial_average_fast(input_array, dim=2, nbins=0):
 	k = 2.*np.pi/conv.LB*(rvals-dr/2.)
 
 	return tbin.astype('float64')/nr.astype('float64'), k
+
+
+def radial_average_flexible(input_array, bins=10):
+	''' This is a slightly slower version of the radial average routine above.
+	It allows for more flexible binning however. '''
+	pass
 	
 
 def power_spectrum_1d(input_array_nd, nbins=100):
@@ -84,7 +88,7 @@ def power_spectrum_1d(input_array_nd, nbins=100):
 
 	input_array = power_spectrum_nd(input_array_nd)	
 
-	return radial_average(input_array, dim=len(input_array_nd.shape), nbins=nbins)
+	return radial_average_fast(input_array, dim=len(input_array_nd.shape))
 
 def cross_power_spectrum1d(input_array1_nd, input_array2_nd):
 	''' Calculate the power spectrum of input_array_nd (2 or 3 dimensions)
