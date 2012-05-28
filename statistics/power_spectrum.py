@@ -79,11 +79,10 @@ def cross_power_spectrum_nd(input_array1, input_array2):
 #	return radialdata, k
 
 
-def radial_average(input_array, dim=2, nbins=0):
+def radial_average_fast(input_array, dim=2, nbins=0):
 	''' Take an n-dimensional powerspectrum and return the radially averaged 
 	version. For internal use mostly.
 	Return P(k), k (Mpc^-1)'''
-	#TODO: use middle of k bins instead of edges, scale Pk correctly
 
 	if dim == 2:
 		y,x = np.indices(input_array.shape)
