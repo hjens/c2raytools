@@ -89,15 +89,20 @@ def power_spectrum_1d(input_array_nd, nbins=100):
 def cross_power_spectrum1d(input_array1_nd, input_array2_nd):
 	''' Calculate the power spectrum of input_array_nd (2 or 3 dimensions)
 	and return it as a one-dimensional array 
-	Return P(k), k (in Mpc^-1)'''
+	Return P(k) [Mpc^3], k [Mpc^-1]'''
 
 	input_array = cross_power_spectrum_nd(input_array1_nd, input_array2_nd)	
 
 	return radial_average(input_array, dim=len(input_array1_nd.shape))
 
-def power_spectrum_mu(input_array, nbins=20):
+def power_spectrum_mu(input_array, los_axis = 0, n_mubins=20, n_kbins=10):
 	'''
-	Calculate the power spectrum and bin it in mu=cos(theta)
+	Calculate the power spectrum and bin it in mu=cos(theta) and k
+	input_array is the array to calculate the power spectrum from
+	los_axis is the line of sight axis (default 0)
+	mubins is the number of (linearly spaced) bins in mu
+	kbins is the number of (linearly spaced) bins in k
+	return Pk [Mpc^3] dim=(n_mubins,n_kbins), mu, k[Mpc^-1]
 	'''
 
 	dim = len(input_array.shape)
@@ -112,28 +117,45 @@ def power_spectrum_mu(input_array, nbins=20):
 	else:
 		raise Exception('Check your dimensions!')
 
-	#Line-of-sight distance from center (assume los_axis = 0 for now)
-	los_dist = x-center[0]
+	#Line-of-sight distance from center 
+	if los_axis == 0:
+		los_dist = x-center[0]
+	elif los_axis == 1:
+		los_dist = y-center[0]
+	elif los_axis == 2:
+		los_dist = z-center[0]
+	else:
+		raise Exception('Your space is not %d-dimensional!' % los_axis)
 
 	#mu=cos(theta) = k_par/k
 	mu = np.abs(los_dist)/np.abs(r)
 	mu[np.where(r < 0.001)] = np.nan
 
+	#Calculate k values
+	k = 2.*np.pi/conv.LB*r
+	kbins = np.linspace(k.min(),k.max(),n_kbins)
+	dk = kbins[1]-kbins[0]
+	kbins += dk/2.
+
 	#Calculate the power spectrum
 	powerspectrum = power_spectrum_nd(input_array)	
+
+	#Remove the zero component from the power spectrum. mu is undefined here
 	powerspectrum[tuple(np.array(input_array.shape)/2)] = 0.
 
 	#Bin the data
-	dmu = 1./float(nbins)
-	mubins = np.linspace(dmu/2., 1.-dmu/2, nbins)
-	mudata = np.zeros(nbins)
-	working_mask = np.ones(input_array.shape, bool)
-	for i in range(nbins):
-		mu_min = mubins[i]-dmu/2.
-		mu_max = mubins[i]+dmu/2.
-		idx = (mu >= mu_min) * (mu < mu_max) * working_mask
-		print mu_min, mu_max, len(idx), np.mean(powerspectrum[idx])
-		mudata[i] = np.mean(powerspectrum[idx])
+	utils.print_msg('Binning data...')
+	dmu = 1./float(n_mubins)
+	mubins = np.linspace(dmu/2., 1.-dmu/2, n_mubins)
+	outdata = np.zeros((n_mubins,n_kbins))
+	for ki in range(n_kbins):
+		kmin = kbins[ki]-dk/2.
+		kmax = kbins[ki]+dk/2.
+		for i in range(n_mubins):
+			mu_min = mubins[i]-dmu/2.
+			mu_max = mubins[i]+dmu/2.
+			idx = (mu >= mu_min) * (mu < mu_max) * (k >= kmin) * (k < kmax)
+			outdata[i,ki] = np.mean(powerspectrum[idx])
 
-	return mudata, mubins
+	return outdata, mubins, kbins
 
