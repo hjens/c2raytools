@@ -74,59 +74,60 @@ def radial_average_fast(input_array, dim=2):
 	return tbin.astype('float64')/nr.astype('float64'), k
 
 
-#def radial_average_flexible(input_array, bins=10):
-#	''' This is a slightly slower version of the radial average routine above.
-#	It allows for more flexible binning however. '''
-#
-#	dim = len(input_array.shape)
-#	if dim == 2:
-#		y,x = np.indices(input_array.shape)
-#		center = np.array([(x.max()-x.min())/2.0, (x.max()-x.min())/2.0])
-#		r = np.hypot(x - center[0], y - center[1])
-#	elif dim == 3:
-#		y,x,z = np.indices(input_array.shape)
-#		center = np.array([(x.max()-x.min())/2.0, (x.max()-x.min())/2.0, (z.max()-z.min())/2.0])
-#		r = np.sqrt((x - center[0])**2 + (y - center[1])**2 + (z-center[2])**2)
-#	else:
-#		raise Exception('Check your dimensions!')
-#
-#	#Calculate k values
-#	k = 2.*np.pi/conv.LB*r
-#
-#	#If bins is a number, do the fast binning
-#	if isinstance(bins, int):
-#		return radial_average_fast(input_array)
-#	
-#	#Otherwise, do slower binning
-#	kbins += dk/2.
-#
-#	#Bin the data
-#	utils.print_msg('Binning data...')
-#	nbins = len(bins-1)
-#	outdata = np.zeros(nbins)
-#	for ki in range(nbins):
-#		dk = bins[ki+1]-bins[ki]
-#		kmin = bins[ki]-dk/2.
-#		kmax = bins[ki]+dk/2.
-#		for i in range(n_mubins):
-#			mu_min = mubins[i]-dmu/2.
-#			mu_max = mubins[i]+dmu/2.
-#			idx = (mu >= mu_min) * (mu < mu_max) * (k >= kmin) * (k < kmax)
-#			outdata[i,ki] = np.mean(powerspectrum[idx])
-#
-#	return outdata, mubins, kbins
+def radial_average_flexible(input_array, dim=2, bins=10):
+	''' This is a slightly slower version of the radial average routine above.
+	It allows for more flexible binning however. '''
+
+	dim = len(input_array.shape)
+	if dim == 2:
+		y,x = np.indices(input_array.shape)
+		center = np.array([(x.max()-x.min())/2.0, (x.max()-x.min())/2.0])
+		r = np.hypot(x - center[0], y - center[1])
+	elif dim == 3:
+		y,x,z = np.indices(input_array.shape)
+		center = np.array([(x.max()-x.min())/2.0, (x.max()-x.min())/2.0, (z.max()-z.min())/2.0])
+		r = np.sqrt((x - center[0])**2 + (y - center[1])**2 + (z-center[2])**2)
+	else:
+		raise Exception('Check your dimensions!')
+
+	#Calculate k values
+	k = 2.*np.pi/conv.LB*r
+
+	#If bins is None, do the fast binning
+	if bins == None:
+		return radial_average_fast(input_array)
+	if isinstance(bins,int):
+		kmin = 2.*np.pi/conv.LB
+		bins = np.linspace(kmin, k.max(), bins+1)
+	
+	#Bin the data
+	utils.print_msg('Binning data...')
+	nbins = len(bins)-1
+	dk = (bins[1:]-bins[:-1])/2.
+	outdata = np.zeros(nbins)
+	for ki in range(nbins):
+		kmin = bins[ki]
+		kmax = bins[ki+1]
+		idx = (k >= kmin) * (k < kmax)
+		outdata[ki] = np.mean(input_array[idx])
+
+	return outdata, bins[:-1]+dk
 
 	
 
-def power_spectrum_1d(input_array_nd, nbins=100):
+def power_spectrum_1d(input_array_nd, bins=100):
 	''' Calculate the power spectrum of input_array_nd (2 or 3 dimensions)
 	and return it as a one-dimensional array 
+	- input_array_nd is the data array
+	- bins can be an array of k bin edges, a number of bins or None. If None is used,
+	a faster binning algorithm is used, but the number and position of the bins are
+	unspecified.
 	Return P(k), k (in Mpc^-1)'''
 
 
 	input_array = power_spectrum_nd(input_array_nd)	
 
-	return radial_average_fast(input_array, dim=len(input_array_nd.shape))
+	return radial_average_flexible(input_array, dim=len(input_array_nd.shape), bins=bins)
 
 def cross_power_spectrum1d(input_array1_nd, input_array2_nd):
 	''' Calculate the power spectrum of input_array_nd (2 or 3 dimensions)
