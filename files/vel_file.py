@@ -17,27 +17,14 @@ class VelocityFile:
 
 	def read_from_file(self, filename):
 		utils.print_msg('Reading velocity file: %s...' % filename)
+
 		#Read raw data from velocity file
-		import struct
-		from scipy.io.numpyio import fread
-
-		read_int = lambda f: struct.unpack('i', f.read(4))[0] #The format may be 'l' on some platforms
-		file = open(filename, 'rb')
-		self.mesh_x = read_int(file)
-		self.mesh_y = read_int(file)
-		self.mesh_z = read_int(file)
-
-		self.raw_velocity = fread(file, self.mesh_x*self.mesh_y*self.mesh_z*3, 'f').astype('float64')
-		file.close()
+		f = open(filename, 'rb')
+		temp_mesh = np.fromfile(f, count=3, dtype='int32')
+		self.mesh_x, self.mesh_y, self.mesh_z = temp_mesh
+		self.raw_velocity = np.fromfile(f, dtype='float32').astype('float64')
+		f.close()
 		self.raw_velocity = self.raw_velocity.reshape((3, self.mesh_x, self.mesh_y, self.mesh_z), order='F')
-
-		#Store the redshift from the filename
-		import os.path
-		name = os.path.split(filename)[1]
-		self.z = float(name.split('v_')[0])
-
-		#Convert to kms/s*(rho/8)
-		self.kmsrho8 = self.raw_velocity*conv.velconvert(z = self.z)
 
 		#Store the redshift from the filename
 		try:
@@ -47,6 +34,10 @@ class VelocityFile:
 		except:
 			utils.print_msg('Could not determine redshift from file name')
 			z = -1
+
+		#Convert to kms/s*(rho/8)
+		self.kmsrho8 = self.raw_velocity*conv.velconvert(z = self.z)
+
 
 		utils.print_msg('...done')
 

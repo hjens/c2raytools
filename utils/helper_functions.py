@@ -79,18 +79,16 @@ def get_interpolated_array(in_array, new_len, kind='nearest'):
 def read_binary_with_meshinfo(filename, bits=32, order='F'):
 	''' Read a binary file with three inital integers '''
 
-	import struct
-	from scipy.io.numpyio import fread
+	#import struct
+	#from scipy.io.numpyio import fread
 
 	assert(bits ==32 or bits==64)
 
-	read_int = lambda f: struct.unpack('i', f.read(4))[0] #The format may be 'l' on some platforms
+	#read_int = lambda f: struct.unpack('i', f.read(4))[0] #The format may be 'l' on some platforms
 	f = open(filename)
 
-	mesh_x = read_int(f)
-	mesh_y = read_int(f)
-	mesh_z = read_int(f)
-	print mesh_x, mesh_y, mesh_z
+	temp_mesh = np.fromfile(f,count=3,dtype='int32')
+	self.mesh_x, self.mesh_y, self.mesh_z = temp_mesh
 
 	#data = fread(f, mesh_x*mesh_y*mesh_z,'f')
 	datatype = dtype=(bits==32 and np.float32 or np.float64)

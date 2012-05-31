@@ -22,8 +22,6 @@ class DensityFile:
 
 		utils.print_msg('Reading density file:%s ...' % filename)
 		#Read raw data from density file
-		import struct
-		from scipy.io.numpyio import fread
 		f = open(filename, 'rb')
 
 		if old_format:
@@ -31,12 +29,10 @@ class DensityFile:
 			self.mesh_y = 203
 			self.mesh_z = 203
 		else:
-			read_int = lambda f: struct.unpack('i', f.read(4))[0] #The format may be 'l' on some platforms
-			self.mesh_x = read_int(f)
-			self.mesh_y = read_int(f)
-			self.mesh_z = read_int(f)
+			temp_mesh = np.fromfile(f,count=3,dtype='int32')
+			self.mesh_x, self.mesh_y, self.mesh_z = temp_mesh
 
-		self.raw_density = fread(f, self.mesh_x*self.mesh_y*self.mesh_z, 'f')
+		self.raw_density = np.fromfile(f, dtype='float32')
 		self.raw_density = self.raw_density.reshape((self.mesh_x, self.mesh_y, self.mesh_z), order='F')
 		
 		f.close()

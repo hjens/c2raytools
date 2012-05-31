@@ -17,22 +17,15 @@ class XfracFile:
 		''' Read the ionization fraction file
 		If old_format is true, the precision is taken to be 32 bits '''
 		utils.print_msg('Reading xfrac file:%s...' % filename)
-		import struct
-		from scipy.io.numpyio import fread
 
-		read_int = lambda f: struct.unpack('i', f.read(4))[0] #The format may be 'l' on some platforms
 		f = open(filename, 'rb')
-		dummy = read_int(f)
-		self.mesh_x = read_int(f)
-		self.mesh_y = read_int(f)
-		self.mesh_z = read_int(f)
-		dummy = read_int(f)
-		dummy = read_int(f)
+		temp_mesh = np.fromfile(f, count=6, dtype='int32')
+		self.mesh_x, self.mesh_y, self.mesh_z = temp_mesh[1:4]
 
 		if old_format:
-			self.xi = fread(f, self.mesh_x*self.mesh_y*self.mesh_z, 'f')
+			self.xi = np.fromfile(f, dtype='float32')
 		else:
-			self.xi = fread(f, self.mesh_x*self.mesh_y*self.mesh_z, 'd')
+			self.xi = np.fromfile(f, dtype='float64')
 		self.xi = self.xi.reshape((self.mesh_x, self.mesh_y, self.mesh_z), order='F')
 
 		f.close()
