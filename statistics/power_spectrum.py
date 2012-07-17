@@ -5,10 +5,14 @@ from .. import utils
 from scipy import fftpack
 
 
-def power_spectrum_nd(input_array):
+def power_spectrum_nd(input_array, box_side = None):
 	''' Calculate the power spectrum of input_array and return it as an n-dimensional array,
-	where n is the number of dimensions in input_array'''
+	where n is the number of dimensions in input_array
+	box_side is the size of the box in comoving Mpc. If this is set to None (default),
+	the internal box size is used'''
 
+	if box_side == None:
+		box_side = conv.LB
 
 	utils.print_msg( 'Calculating 2D power spectrum...')
 	ft = fftpack.fftshift(fftpack.fftn(input_array.astype('float64')))
@@ -16,8 +20,9 @@ def power_spectrum_nd(input_array):
 	utils.print_msg( '...done')
 
 	# scale
-	boxvol = conv.LB**len(input_array.shape)
+	boxvol = box_side**len(input_array.shape)
 	pixelsize = boxvol/(np.product(input_array.shape))
+	print 'pixelsize:', pixelsize
 	power_spectrum *= pixelsize**2/boxvol
 
 	return power_spectrum
@@ -37,7 +42,7 @@ def cross_power_spectrum_nd(input_array1, input_array2):
 	return power_spectrum
 
 
-def radial_average_fast(input_array, dim=2):
+def radial_average_fast(input_array, box_side, dim=2):
 	''' Take an n-dimensional powerspectrum and return the radially averaged 
 	version. For internal use mostly.
 	Return P(k), k (Mpc^-1)'''
@@ -52,6 +57,9 @@ def radial_average_fast(input_array, dim=2):
 		r = np.sqrt((x - center[0])**2 + (y - center[1])**2 + (z-center[2])**2)
 	else:
 		raise Exception( 'Check your dimensions!')
+
+	if box_side == None:
+		box_side = conv.LB
 
 	ind = np.argsort(r.flat) 			#indices of sorted array
 	r_sorted = r.flat[ind] 			#sorted radii
@@ -69,12 +77,12 @@ def radial_average_fast(input_array, dim=2):
 	rvals = r_sorted[r_ind[1:]]
 	dr = rvals[1]-rvals[0]
 
-	k = 2.*np.pi/conv.LB*(rvals-dr/2.)
+	k = 2.*np.pi/box_side*(rvals-dr/2.)
 
 	return tbin.astype('float64')/nr.astype('float64'), k
 
 
-def radial_average_flexible(input_array, dim=2, bins=10):
+def radial_average_flexible(input_array, box_side, dim=2, bins=10):
 	''' This is a slightly slower version of the radial average routine above.
 	It allows for more flexible binning however. '''
 
@@ -91,13 +99,13 @@ def radial_average_flexible(input_array, dim=2, bins=10):
 		raise Exception('Check your dimensions!')
 
 	#Calculate k values
-	k = 2.*np.pi/conv.LB*r
+	k = 2.*np.pi/box_side*r
 
 	#If bins is None, do the fast binning
 	if bins == None:
-		return radial_average_fast(input_array)
+		return radial_average_fast(input_array, box_side)
 	if isinstance(bins,int):
-		kmin = 2.*np.pi/conv.LB
+		kmin = 2.*np.pi/box_side
 		bins = np.linspace(kmin, k.max(), bins+1)
 	
 	#Bin the data
@@ -115,7 +123,7 @@ def radial_average_flexible(input_array, dim=2, bins=10):
 
 	
 
-def power_spectrum_1d(input_array_nd, bins=100):
+def power_spectrum_1d(input_array_nd, bins=100, box_side=None):
 	''' Calculate the power spectrum of input_array_nd (2 or 3 dimensions)
 	and return it as a one-dimensional array 
 	- input_array_nd is the data array
@@ -124,10 +132,12 @@ def power_spectrum_1d(input_array_nd, bins=100):
 	unspecified.
 	Return P(k), k (in Mpc^-1)'''
 
+	if box_side == None:
+		box_side = conv.LB
 
-	input_array = power_spectrum_nd(input_array_nd)	
+	input_array = power_spectrum_nd(input_array_nd, box_side=box_side)	
 
-	return radial_average_flexible(input_array, dim=len(input_array_nd.shape), bins=bins)
+	return radial_average_flexible(input_array, dim=len(input_array_nd.shape), bins=bins, box_side=box_side)
 
 def cross_power_spectrum1d(input_array1_nd, input_array2_nd):
 	''' Calculate the power spectrum of input_array_nd (2 or 3 dimensions)
@@ -146,7 +156,10 @@ def power_spectrum_mu(input_array, los_axis = 0, n_mubins=20, n_kbins=10):
 	mubins is the number of (linearly spaced) bins in mu
 	kbins is the number of (linearly spaced) bins in k
 	return Pk [Mpc^3] dim=(n_mubins,n_kbins), mu, k[Mpc^-1]
+	TODO: allow custom box side, verify that this routine works at all
 	'''
+
+	print 'Warning! The mu binning is not tested. It probably doesn\'t work yet. You should not use it.'
 
 	dim = len(input_array.shape)
 	if dim == 2:

@@ -10,6 +10,9 @@ density_dir = base_path+'/coarser_densities/halos_removed/'
 #Enable output
 c2t.utils.set_verbose(True)
 
+#We are using the 114/h Mpc simulation box, so set all the proper conversion factors
+c2t.conv.set_sim_constants(boxsize_cMpc = 114.)
+
 #Make the boxes
 xcube, dcube, dtcube, z = c2t.misc.freq_box(xfrac_dir, density_dir, z_low=7.0, cube_slices=500)
 
