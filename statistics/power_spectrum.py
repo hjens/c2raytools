@@ -22,7 +22,6 @@ def power_spectrum_nd(input_array, box_side = None):
 	# scale
 	boxvol = box_side**len(input_array.shape)
 	pixelsize = boxvol/(np.product(input_array.shape))
-	print 'pixelsize:', pixelsize
 	power_spectrum *= pixelsize**2/boxvol
 
 	return power_spectrum
