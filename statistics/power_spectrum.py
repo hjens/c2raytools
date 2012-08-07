@@ -14,7 +14,7 @@ def power_spectrum_nd(input_array, box_side = None):
 	if box_side == None:
 		box_side = conv.LB
 
-	utils.print_msg( 'Calculating 2D power spectrum...')
+	utils.print_msg( 'Calculating power spectrum...')
 	ft = fftpack.fftshift(fftpack.fftn(input_array.astype('float64')))
 	power_spectrum = np.abs(ft)**2
 	utils.print_msg( '...done')
@@ -26,22 +26,30 @@ def power_spectrum_nd(input_array, box_side = None):
 
 	return power_spectrum
 
-def cross_power_spectrum_nd(input_array1, input_array2):
+def cross_power_spectrum_nd(input_array1, input_array2, box_side = None):
 	''' Calculate the cross power spectrum of input_array1 and input_array2 and return it as an n-dimensional array,
 	where n is the number of dimensions in input_array'''
 
+	if box_side == None:
+		box_side = conv.LB
+
 	assert(input_array1.shape == input_array2.shape)
 
-	utils.print_msg( 'Calculating 2D power spectrum...')
+	utils.print_msg( 'Calculating power spectrum...')
 	ft1 = fftpack.fftshift(fftpack.fftn(input_array1.astype('float64')))
 	ft2 = fftpack.fftshift(fftpack.fftn(input_array2.astype('float64')))
-	power_spectrum = np.abs(ft1)*np.abs(ft2)
+	power_spectrum = np.real(ft1)*np.real(ft2)+np.imag(ft1)*np.imag(ft2)
 	utils.print_msg( '...done')
+
+	# scale
+	boxvol = box_side**len(input_array1.shape)
+	pixelsize = boxvol/(np.product(input_array1.shape))
+	power_spectrum *= pixelsize**2/boxvol
 
 	return power_spectrum
 
 
-def radial_average_fast(input_array, box_side, dim=2):
+def radial_average_fast(input_array, box_side = None, dim=2):
 	''' Take an n-dimensional powerspectrum and return the radially averaged 
 	version. For internal use mostly.
 	Return P(k), k (Mpc^-1)'''
@@ -81,9 +89,12 @@ def radial_average_fast(input_array, box_side, dim=2):
 	return tbin.astype('float64')/nr.astype('float64'), k
 
 
-def radial_average_flexible(input_array, box_side, dim=2, bins=10):
+def radial_average_flexible(input_array, box_side = None, dim=2, bins=10):
 	''' This is a slightly slower version of the radial average routine above.
 	It allows for more flexible binning however. '''
+
+	if box_side == None:
+		box_side = conv.LB
 
 	dim = len(input_array.shape)
 	if dim == 2:
@@ -138,36 +149,38 @@ def power_spectrum_1d(input_array_nd, bins=100, box_side=None):
 
 	return radial_average_flexible(input_array, dim=len(input_array_nd.shape), bins=bins, box_side=box_side)
 
-def cross_power_spectrum1d(input_array1_nd, input_array2_nd):
+def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, bins=100, box_side=None):
 	''' Calculate the power spectrum of input_array_nd (2 or 3 dimensions)
 	and return it as a one-dimensional array 
 	Return P(k) [Mpc^3], k [Mpc^-1]'''
 
+	if box_side == None:
+		box_side = conv.LB
+
 	input_array = cross_power_spectrum_nd(input_array1_nd, input_array2_nd)	
 
-	return radial_average(input_array, dim=len(input_array1_nd.shape))
+	return radial_average_flexible(input_array, dim=len(input_array1_nd.shape), bins=bins, box_side = box_side)
 
-def power_spectrum_mu(input_array, los_axis = 0, n_mubins=20, n_kbins=10):
+def power_spectrum_mu(input_array, los_axis = 0, n_mubins=20, n_kbins=10, logbins=False):
 	'''
 	Calculate the power spectrum and bin it in mu=cos(theta) and k
 	input_array is the array to calculate the power spectrum from
 	los_axis is the line of sight axis (default 0)
 	mubins is the number of (linearly spaced) bins in mu
 	kbins is the number of (linearly spaced) bins in k
+	if logbins is true, then the bins are logaritmically spaced
 	return Pk [Mpc^3] dim=(n_mubins,n_kbins), mu, k[Mpc^-1]
-	TODO: allow custom box side, verify that this routine works at all
+	TODO: allow custom box side
 	'''
-
-	print 'Warning! The mu binning is not tested. It probably doesn\'t work yet. You should not use it.'
 
 	dim = len(input_array.shape)
 	if dim == 2:
-		y,x = np.indices(input_array.shape)
-		center = np.array([(x.max()-x.min())/2.0, (x.max()-x.min())/2.0])
+		x,y = np.indices(input_array.shape)
+		center = np.array([(x.max()-x.min())/2.0, (y.max()-y.min())/2.0])
 		r = np.hypot(x - center[0], y - center[1])
 	elif dim == 3:
-		y,x,z = np.indices(input_array.shape)
-		center = np.array([(x.max()-x.min())/2.0, (x.max()-x.min())/2.0, (z.max()-z.min())/2.0])
+		x,y,z = np.indices(input_array.shape)
+		center = np.array([(x.max()-x.min())/2.0, (y.max()-y.min())/2.0, (z.max()-z.min())/2.0])
 		r = np.sqrt((x - center[0])**2 + (y - center[1])**2 + (z-center[2])**2)
 	else:
 		raise Exception('Check your dimensions!')
@@ -183,14 +196,18 @@ def power_spectrum_mu(input_array, los_axis = 0, n_mubins=20, n_kbins=10):
 		raise Exception('Your space is not %d-dimensional!' % los_axis)
 
 	#mu=cos(theta) = k_par/k
-	mu = np.abs(los_dist)/np.abs(r)
+	mu = los_dist/np.abs(r)
 	mu[np.where(r < 0.001)] = np.nan
 
 	#Calculate k values
 	k = 2.*np.pi/conv.LB*r
-	kbins = np.linspace(k.min(),k.max(),n_kbins)
-	dk = kbins[1]-kbins[0]
-	kbins += dk/2.
+	if logbins:
+		kbins = 10**np.linspace(np.log10(k.min()),np.log10(k.max()),n_kbins+1)
+	else:
+		kbins = np.linspace(k.min(),k.max(),n_kbins+1)
+	dk = (kbins[1:]-kbins[:-1])/2.
+	#dk = kbins[1]-kbins[0]
+	#kbins += dk/2.
 
 	#Calculate the power spectrum
 	powerspectrum = power_spectrum_nd(input_array)	
@@ -201,16 +218,20 @@ def power_spectrum_mu(input_array, los_axis = 0, n_mubins=20, n_kbins=10):
 	#Bin the data
 	utils.print_msg('Binning data...')
 	dmu = 1./float(n_mubins)
-	mubins = np.linspace(dmu/2., 1.-dmu/2, n_mubins)
+	mubins = np.linspace(-1.+dmu/2., 1.-dmu/2, n_mubins)
 	outdata = np.zeros((n_mubins,n_kbins))
 	for ki in range(n_kbins):
-		kmin = kbins[ki]-dk/2.
-		kmax = kbins[ki]+dk/2.
+		print ki
+		#kmin = kbins[ki]-dk/2.
+		#kmax = kbins[ki]+dk/2.
+		kmin = kbins[ki]
+		kmax = kbins[ki+1]
+		kidx = (k >= kmin) * (k < kmax)
 		for i in range(n_mubins):
 			mu_min = mubins[i]-dmu/2.
 			mu_max = mubins[i]+dmu/2.
-			idx = (mu >= mu_min) * (mu < mu_max) * (k >= kmin) * (k < kmax)
+			idx = (mu >= mu_min) * (mu < mu_max) * kidx
 			outdata[i,ki] = np.mean(powerspectrum[idx])
 
-	return outdata, mubins, kbins
+	return outdata, mubins, kbins[:-1]+dk
 

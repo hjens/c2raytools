@@ -88,7 +88,7 @@ def read_binary_with_meshinfo(filename, bits=32, order='F'):
 	f = open(filename)
 
 	temp_mesh = np.fromfile(f,count=3,dtype='int32')
-	self.mesh_x, self.mesh_y, self.mesh_z = temp_mesh
+	mesh_x, mesh_y, mesh_z = temp_mesh
 
 	#data = fread(f, mesh_x*mesh_y*mesh_z,'f')
 	datatype = dtype=(bits==32 and np.float32 or np.float64)
