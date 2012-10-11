@@ -96,6 +96,16 @@ def read_binary_with_meshinfo(filename, bits=32, order='F'):
 	data = data.reshape((mesh_x, mesh_y, mesh_z), order=order)
 	return data.astype('float64')
 
+def save_binary_with_meshinfo(filename, data, bits=32, order='F'):
+	''' Save a binary file with three inital integers '''
+	assert(bits ==32 or bits==64)
+	f = open(filename, 'wb')
+	mesh = np.array(data.shape).astype('int32')
+	mesh.tofile(f)
+	datatype = (np.float32 if bits==32 else np.float64)
+	data.flatten(order=order).astype(datatype).tofile(f)
+	f.close()
+
 verbose = False
 def set_verbose(verb):
 	global verbose
