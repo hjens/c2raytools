@@ -29,7 +29,7 @@ def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None):
 		redshifts = filter(lambda x : x < max_z, redshifts)
 	redshifts.sort()
 
-	return redshifts
+	return np.array(redshifts)
 
 def get_dens_redshifts(dens_dir, min_z = None, max_z = None):
 	''' Make a list of density files in density_dir with redshifts between min_z and max_z 
@@ -55,7 +55,7 @@ def get_dens_redshifts(dens_dir, min_z = None, max_z = None):
 		redshifts = filter(lambda x : x < max_z, redshifts)
 	redshifts.sort()
 
-	return redshifts
+	return np.array(redshifts)
 
 def print_msg(message):
 	''' Print a message of verbose is true '''
