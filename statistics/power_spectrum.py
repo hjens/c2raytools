@@ -78,7 +78,8 @@ def radial_average(input_array, box_dims, kbins=10):
 
 	if isinstance(kbins,int):
 		kmin = 2.*np.pi/min(box_dims)
-		kbins = 10**np.linspace(np.log10(kmin), np.log10(k.max()), bins+1)
+		kbins = 10**np.linspace(np.log10(kmin), np.log10(k.max()), kbins+1)
+
 	
 	#Bin the data
 	utils.print_msg('Binning data...')
@@ -106,9 +107,9 @@ def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None):
 
 	box_dims = get_dims(box_dims, input_array_nd.shape)
 
-	input_array = power_spectrum_nd(input_array_nd, box_side=box_side)	
+	input_array = power_spectrum_nd(input_array_nd, box_dims=box_dims)	
 
-	return radial_average(input_array, kbins=kbins, box_side=box_side)
+	return radial_average(input_array, kbins=kbins, box_dims=box_dims)
 
 def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dims=None):
 	''' Calculate the power spectrum of input_array_nd (2 or 3 dimensions)
@@ -130,6 +131,8 @@ def power_spectrum_mu(input_array, los_axis = 0, mubins=20, kbins=10, box_dims =
 	kbins is the number of (log spaced) bins in k or a list of bin edges
 	return Pk [Mpc^3] dim=(n_mubins,n_kbins), mu, k[Mpc^-1]
 	'''
+
+	box_dims = get_dims(box_dims, input_array.shape)
 
 	#Calculate the power spectrum
 	powerspectrum = power_spectrum_nd(input_array, box_dims=box_dims)	
@@ -194,7 +197,8 @@ def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None
 
 	#Exclude the k_x = 0, k_y = 0, k_z = 0 modes
 	zero_ind = (x == k.shape[0]/2) + (y == k.shape[1]/2) + (z == k.shape[2]/2)
-	k[zero_ind] = -1.
+	powerspectrum[zero_ind] = 0.
+	#k[zero_ind] = -1.
 
 	#Make mu bins
 	if isinstance(mubins,int):
@@ -224,9 +228,10 @@ def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None
 	return outdata, mubins[:-1]+dmu, kbins[:-1]+dk
 
 
+#For internal use only
 def get_dims(box_dims, ashape):
 	if box_dims == None:
-		return [100]*len(ashape)
+		return [conv.LB]*len(ashape)
 	if not hasattr(box_dims, '__iter__'):
 		return [box_dims]*len(ashape)
 	return box_dims
