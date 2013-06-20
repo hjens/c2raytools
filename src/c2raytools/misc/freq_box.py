@@ -1,5 +1,3 @@
-#These methods are based on Garrelt's IDL routines
-
 from .. import const
 from .. import conv
 import numpy as np
@@ -9,11 +7,24 @@ from temperature import calc_dt
 from .. import utils
 
 def freq_axis(z_low, output_slices, box_length_slices=256, box_length_mpc = conv.LB):
-	''' Make a frequency axis vector with equal spacing in co-moving LOS coordinates. 
-	z_low is the lowest redshift and box_length is the desired number of datapoints on the axis 
-	Return a tuple with the redshifts and corresponding 21 cm line frequencies'''
-
-	#TODO: add option to input z_high
+	''' 
+	Make a frequency axis vector with equal spacing in co-moving LOS coordinates. 
+	
+	Parameters:
+		* z_low (float): The lowest redshift
+		* output_slices (int): the number of slices in the output array
+		* box_length_slices = 256 (int): the number of slices in an input box
+		* box_length_mpc = conv.LB (float): the desired number of datapoints 
+			on the axis
+			 
+	Returns:
+		A tuple where the first element is a numpy array with the redshifts 
+		and the second elemet is a numpy array with the corresponding 21 cm line 
+		frequencies.
+		
+	TODO: 
+		Add option to input z_high
+	'''
 
 	z = z_low
 	z_array = np.zeros((output_slices,2))
@@ -33,13 +44,27 @@ def freq_axis(z_low, output_slices, box_length_slices=256, box_length_mpc = conv
 
 
 def freq_box(xfrac_dir, dens_dir, z_low, cube_slices=100):
-	''' Make frequency boxes of density, ionized fractions, and brightness temperature 
-	-- xfrac_dir: directory containing xfrac files
-	-- dens_dir: directory containing density files
-	-- z_low: lowest redshift to include
-	-- cube_slices: number of slices to divide the cube into
+	''' 
+	Make frequency (lightcone) boxes of density, ionized fractions, 
+	and brightness temperature. This routine is more or less a 
+	direct translation of Garrelts IDL routine. I have not tested it
+	much. Use at your own risk.
+	
+	Parameters: 
+		* xfrac_dir (string): directory containing xfrac files
+		* dens_dir (string): directory containing density files
+		* z_low (float): lowest redshift to include
+		* cube_slices = 100 (int): number of slices to divide the cube into
 
-	Return tuple with density box , xfrac box, dt box , redshifts '''
+	Returns: 
+		Tuple with (density box, xfrac box, dt box, redshifts), where
+		density box, xfrac box and dt box are numpy arrays containing
+		the lightcone quantities. redshifts is an array containing the 
+		redshift for each slice.
+		
+	TODO:
+		Test this routine. Make it more general. Check error messages.
+	'''
 
 
 	#Get the list of redshifts where we have simulation output files
