@@ -1,21 +1,43 @@
-#This file defines the class VelocityFile which is used to read a file containing velocity data
-#Useful attributes of the class are:
-#raw_velocity -- the velocity in simulation units
-#z -- the redshift of the file (-1 if it couldn't be determined from the file name
-#To get the velocity in km/s, use get_kms_from_density
-
-import numpy as np
 from .. import const
 from .. import conv
 from .. import utils
-from density_file import *
 
 class VelocityFile:
+	'''
+	A CubeP3M velocity/momentum file.
+	
+	Use the read_from_file method to load a density file, or 
+	pass the filename to the constructor.
+	
+	Some useful attributes of this class are:
+	raw_velocity -- the velocity in simulation units
+	z -- the redshift of the file (-1 if it couldn't be determined from the file name)
+	To get the velocity in km/s, use get_kms_from_density
+	
+	'''
+	
 	def __init__(self, filename = None):
+		'''
+		Initialize the file. If filename is given, read data. Otherwise,
+		do nothing.
+		Parameters:
+			* filename = None (string): the file to read from.
+		Returns:
+			Nothing
+		'''
 		if filename:
 			self.read_from_file(filename)
 
 	def read_from_file(self, filename):
+		'''
+		Read data from file. Sets the instance variables
+		self.raw_velocity and self.kmsrho8
+		
+		Parameters:
+			* filename (string): the file to read from.
+		Returns:
+			Nothing
+		'''
 		utils.print_msg('Reading velocity file: %s...' % filename)
 
 		#Read raw data from velocity file
@@ -33,7 +55,7 @@ class VelocityFile:
 			self.z = float(name.split('v_')[0])
 		except:
 			utils.print_msg('Could not determine redshift from file name')
-			z = -1
+			self.z = -1
 
 		#Convert to kms/s*(rho/8)
 		self.kmsrho8 = self.raw_velocity*conv.velconvert(z = self.z)
@@ -42,10 +64,18 @@ class VelocityFile:
 		utils.print_msg('...done')
 
 	def get_kms_from_density(self, density):
-		''' Get the velocity in kms. Since the file stores
+		''' 
+		Get the velocity in kms. Since the file stores
 		momentum rather than velocity, we need the density for this.
-		density can be a string with a filename, a DensityFile object 
-		or a numpy array with the raw density'''
+		
+		Parameters:
+			* density (string, DensityFile object or numpy array): the density
+				or a file to read the density from.
+				
+		Returns:
+			A numpy array with the same dimensions as the simulation box,
+			containing the velocity in km/s.
+		'''
 
 		if isinstance(density,str):
 			import density_file as df
@@ -58,8 +88,4 @@ class VelocityFile:
 
 
 
-#-------------------------TEST------------------------------
-if __name__ == '__main__':
-	velfile = VelocityFile(example_velocity)	
-	print velfile.mesh_x, velfile.mesh_y, velfile.mesh_z
-	print velfile.raw_velocity[0,0,0]
+
