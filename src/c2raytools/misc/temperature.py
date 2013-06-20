@@ -4,10 +4,17 @@ from .. import const
 from .. import utils
 
 def calc_dt(xfrac, dens, z = -1):
-	'''Calculate the differential brightness temperature box (in mK) assuming T_s >> T_CMB
-	- xfrac can be an XfracFile object, a filename or an array containing ionization fractions
-	- dens can be a DensityFile object, a filename or an array containing density in sim units
-	- z is the redshift (if < 0 this will be figured out from the files)
+	'''
+	Calculate the differential brightness temperature assuming T_s >> T_CMB
+	
+	Parameters:
+		* xfrac (XfracFile object, string or numpy array): the ionization fraction
+		* dens (DensityFile object, string or numpy array): density in sim units
+		* z = -1 (float): The redshift (if < 0 this will be figured out from the files)
+		
+	Returns:
+		The differential brightness temperature as a numpy array with
+		the same dimensions as xfrac.
 	'''
 
 	#Figure out types of xfrac and dens
