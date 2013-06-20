@@ -1,6 +1,7 @@
 from .. import const
 from .. import conv
 from .. import utils
+import density_file as df
 
 class VelocityFile:
 	'''
@@ -20,6 +21,7 @@ class VelocityFile:
 		'''
 		Initialize the file. If filename is given, read data. Otherwise,
 		do nothing.
+		
 		Parameters:
 			* filename = None (string): the file to read from.
 		Returns:
@@ -78,10 +80,9 @@ class VelocityFile:
 		'''
 
 		if isinstance(density,str):
-			import density_file as df
 			dfile = df.DensityFile(density)
 			density = dfile.raw_density
-		elif isinstance(density,DensityFile):
+		elif isinstance(density, df.DensityFile):
 			density = density.raw_density
 
 		return self.kmsrho8/(density/8)

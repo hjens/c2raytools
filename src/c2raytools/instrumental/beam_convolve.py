@@ -5,14 +5,26 @@ from .. import misc
 from scipy import signal
 
 def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, beamshape='gaussian'):
-	''' Convolve input_array with a beam of the specified form.
-	input_array - the array to be convolved
-	z - the redshift of the map
-	fov_mpc - the field of view in Mpc
-	beam_w - the width of the beam in arcminutes
-	max_baseline - the maximum baseline in meters (can be specified instead of beam_w)
-	beamshape - a string specifying the shape of the beam (only gaussian supported at this time)
-'''
+	''' 
+	Convolve input_array with a beam of the specified form.
+	The beam can be specified either by a width in arcminutes,
+	or as a maximum baseline. You must specify exctly one of these
+	parameters.
+	
+	Parameters:
+		* input_array (numpy array): the array to be convolved
+		* z (float): the redshift of the map
+		* fov_mpc (float): the field of view in cMpc
+		* beam_w (float) = None: the width of the beam in arcminutes
+		* max_baseline (float): the maximum baseline in meters 
+			(can be specified instead of beam_w)
+		* beamshape (string): The shape of the beam 
+			(only 'gaussian' supported at this time)
+	
+	Returns:
+		The convolved array (a numpy array with the same dimensions
+		as input_array.
+	'''
 
 	if (not beam_w) and (not max_baseline):
 		raise Exception('Please specify either a beam width or a maximum baseline')
@@ -25,7 +37,8 @@ def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, b
 	mx = input_array.shape[0]
 
 	utils.print_msg('Field of view is %.2f arcminutes' % (angle) )
-	utils.print_msg('Convolving with %s beam of size %.2f arcminutes...' % (beamshape, beam_w) )
+	utils.print_msg('Convolving with %s beam of size %.2f arcminutes...' % \
+				(beamshape, beam_w) )
 
 	#Convolve with beam
 	if beamshape == 'gaussian':

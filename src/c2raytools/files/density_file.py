@@ -21,6 +21,7 @@ class DensityFile:
 		'''
 		Initialize the file. If filename is given, read data. Otherwise,
 		do nothing.
+		
 		Parameters:
 			* filename = None (string): the file to read from.
 			* old_format = False (bool): whether to use the old-style 
