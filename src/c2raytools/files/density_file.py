@@ -1,24 +1,48 @@
-#This file defines the class DensityFile which is used to read a file containing density data
-#Useful attributes of the class are:
-#raw_density -- the density in simulation units
-#cgs_density -- the density in cgs units
-#z -- the redshift of the file (-1 if it couldn't be determined from the file name
-
-
 import numpy as np
 from .. import const
 from .. import conv
 from .. import utils 
 
 class DensityFile:
+	'''
+	A CubeP3M density file.
+	
+	Use the read_from_file method to load a density file, or 
+	pass the filename to the constructor.
+	
+	Some useful attributes of this class are:
+	raw_density -- the density in simulation units
+	cgs_density -- the density in cgs units
+	z -- the redshift of the file (-1 if it couldn't be determined from the file name)
+	
+	'''
+	
 	def __init__(self, filename = None, old_format = False):
+		'''
+		Initialize the file. If filename is given, read data. Otherwise,
+		do nothing.
+		Parameters:
+			* filename = None (file object or filename): the file to 
+			read from.
+			* old_format = False (bool): whether to use the old-style 
+			file format.
+		Returns:
+			Nothing
+		'''
 		if filename:
 			self.read_from_file(filename, old_format)
 
 	def read_from_file(self, filename, old_format = False):
-		''' Read density from file.
-		If old_format is True, the file is assumed to contain no header data;
-		the size is then taken to be 203**3 '''
+		'''
+		Read data from file.
+		Parameters:
+			* filename (file object or filename): the file to 
+			read from.
+			* old_format = False (bool): whether to use the old-style 
+			file format.
+		Returns:
+			Nothing
+		'''
 
 		utils.print_msg('Reading density file:%s ...' % filename)
 		#Read raw data from density file
@@ -53,7 +77,7 @@ class DensityFile:
 				self.z = float(name.split('n_')[0])
 		except:
 			utils.print_msg('Could not determine redshift from file name')
-			z = -1
+			self.z = -1
 		utils.print_msg( '...done')
 
 
