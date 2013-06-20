@@ -1,7 +1,3 @@
-#This file defines the classes Halo and HaloList
-#Halo is a simple class that holds som properties of a halo (explained in the class declaration)
-#Halo list reads an ascii file with halo information and contains a list called halos
-
 import numpy as np
 from .. import utils
 from .. import const
@@ -9,6 +5,9 @@ from .. import conv
 
 #A simple struct to hold info about single halo
 class Halo:
+	'''
+	A simple struct to hold info about a single halo
+	'''
 	def __init__(self):
 		self.pos = (0.0, 0.0, 0.0) #Position in grid points
 		self.pos_cm = (0.0, 0.0, 0.0) #Center of mass position in grid points
@@ -20,11 +19,31 @@ class Halo:
 		self.mp = 0 #Number of particles
 		self.solar_masses = 0.0 #Mass in solar masses
 
-#Holds information about a large number of halos, as read from a halo list file
-#Contains methods to select halos based on different criteria
+
 class HaloList:
+	'''
+	A class that holds information about a large number of halos, as read from a 
+	halo list file.
+	Contains methods to select halos based on different criteria.
+	'''
 	def __init__(self, filename=None, min_select_mass = 0.0, max_select_mass = None, 
 			max_select_number=-1, startline = 0):
+		'''
+		Initialize the object. If filename is given, read the file. Otherwise,
+		do nothing.
+		
+		Parameters:
+			* filename = None (string): The file to read from
+			* min_select_mass = 0.0 (float): The lower threshold mass in solar masses.
+			Only halos above this mass will be read.
+			* max_select_mass = None (float): The upper threshold mass in solar masses.
+			Only halos below this mass will be read. If None, there is no limit.
+			* max_select_number = -1 (int): The max number of halos to read. If -1, there
+			is no limit.
+			* startline = 0 (int): The line in the file where reading will start.
+		Returns:
+			Nothing
+		'''
 		self.halos = []
 
 		if filename:
@@ -33,10 +52,21 @@ class HaloList:
 
 	def read_from_file(self,filename, min_select_mass = 0.0, max_select_mass = None, max_select_number=-1, 
 			startline=0):
-		''' Read a halo list from filename.
-		Store halos with a mass larger than min_select_mass (solar masses)
-		If old is True, assume the old file format
-		Return True if all the halos were read '''
+		'''
+		Read a halo list.
+		
+		Parameters:
+			* filename (string): The file to read from
+			* min_select_mass = 0.0 (float): The lower threshold mass in solar masses.
+			Only halos above this mass will be read.
+			* max_select_mass = None (float): The upper threshold mass in solar masses.
+			Only halos below this mass will be read. If None, there is no limit.
+			* max_select_number = -1 (int): The max number of halos to read. If -1, there
+			is no limit.
+			* startline = 0 (int): The line in the file where reading will start.
+		Returns:
+			Return True if all the halos were read. False otherwise.
+		'''
 
 		self.halos = []
 
