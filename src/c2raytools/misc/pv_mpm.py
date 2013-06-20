@@ -4,14 +4,22 @@ from .. import utils
 from .. import conv
 
 def get_distorted_dt(dT, kms, redsh, los_axis=0, num_particles=10):
-	''' Apply peculiar velocity distortions to a differential
-	temperature box, using the Mesh-Particle-Mesh method
-	dT - the temperature box
-	kms - velocity in km/s, array of dimensions (3,mx,my,mz) where (mx,my,mz) is dimensions of dT
-	redsh - the redshift
-	los_axis - the line-of-sight (must be 0, 1 or 2) (default 0)
-	num_particles - the number of particles to use per cell (default 10)
-	return distorted box with same dimensions as dT '''
+	''' 
+	Apply peculiar velocity distortions to a differential
+	temperature box, using the Mesh-Particle-Mesh method,
+	as described in http://arxiv.org/abs/1303.5627
+	
+	Parameters:
+		* dT (numpy array): the differential temperature box
+		* kms (numpy array): velocity in km/s, array of dimensions 
+			(3,mx,my,mz) where (mx,my,mz) is dimensions of dT
+		* redsh (float): the redshift
+		* los_axis = 0 (int): the line-of-sight axis (must be 0, 1 or 2)
+		* num_particles = 10 (int): the number of particles to use per cell
+		
+	Returns:
+		The redshift space box as a numpy array with same dimensions as dT.
+	'''
 
 
 	#Take care of different LOS axes
