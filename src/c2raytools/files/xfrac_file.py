@@ -1,21 +1,46 @@
-#This file defines the class XfracFile which is used to read a file containing ionization fractions
-#Useful attributes of the class are:
-#xi -- the ionized fraction
-#z -- the redshift of the file (-1 if it couldn't be determined from the file name
-
 from .. import const
 import numpy as np
 import density_file as df
 from .. import utils 
 
 class XfracFile:
+	'''
+	A C2Ray xfrac file.
+	
+	Use the read_from_file method to load an xfrac file, or 
+	pass the filename to the constructor.
+	
+	Some useful attributes of this class are:
+	xi -- the ionized fraction
+	z -- the redshift of the file (-1 if it couldn't be determined from the file name)
+	
+	'''
 	def __init__(self, filename = None, old_format=False):
+		'''
+		Initialize the file. If filename is given, read data. Otherwise,
+		do nothing.
+		Parameters:
+			* filename = None (string): the file to 
+			read from.
+			* old_format = False (bool): whether to use the old-style 
+			file format.
+		Returns:
+			Nothing
+		'''
 		if filename:
 			self.read_from_file(filename, old_format)
 
 	def read_from_file(self, filename, old_format=False):
-		''' Read the ionization fraction file
-		If old_format is true, the precision is taken to be 32 bits '''
+		'''
+		Read data from file.
+		Parameters:
+			* filename (string): the file to 
+			read from.
+			* old_format = False (bool): whether to use the old-style (32 bits)
+			file format.
+		Returns:
+			Nothing
+		'''
 		utils.print_msg('Reading xfrac file:%s...' % filename)
 
 		f = open(filename, 'rb')
@@ -38,7 +63,7 @@ class XfracFile:
 			self.z = float(name.split('_')[1][:-4])
 		except:
 			utils.print_msg('Could not determine redshift from file name')
-			x = -1
+			self.z = -1
 
 
 
