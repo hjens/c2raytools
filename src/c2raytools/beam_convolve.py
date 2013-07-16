@@ -1,8 +1,9 @@
 import numpy as np
-from .. import utils
-from .. import const
-from .. import misc
+import const
+from cosmology import zang
 from scipy import signal
+from helper_functions import print_msg
+from misc import gauss_kern
 
 def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, beamshape='gaussian'):
 	''' 
@@ -33,17 +34,17 @@ def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, b
 		lw = const.c/fr/1.e6*1.e3 # wavelength in m
 		beam_w = lw/max_baseline/np.pi*180.*60.
 
-	angle = utils.zang(fov_mpc*1000./(1.0 + z), z)/60.
+	angle = zang(fov_mpc*1000./(1.0 + z), z)/60.
 	mx = input_array.shape[0]
 
-	utils.print_msg('Field of view is %.2f arcminutes' % (angle) )
-	utils.print_msg('Convolving with %s beam of size %.2f arcminutes...' % \
+	print_msg('Field of view is %.2f arcminutes' % (angle) )
+	print_msg('Convolving with %s beam of size %.2f arcminutes...' % \
 				(beamshape, beam_w) )
 
 	#Convolve with beam
 	if beamshape == 'gaussian':
 		sigma0 = (beam_w)/angle/(2.0 * np.sqrt(2.0*np.log(2.)))*mx
-		kernel = misc.gauss_kern(sigma=sigma0, size=mx)
+		kernel = gauss_kern(sigma=sigma0, size=mx)
 	else:
 		raise Exception('Unknown beamshape: %g' % beamshape)
 

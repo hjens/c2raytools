@@ -1,7 +1,7 @@
 import numpy as np
-from .. import utils
-from .. import const
-from .. import conv
+from helper_functions import print_msg
+import const
+import conv
 
 #A simple struct to hold info about single halo
 class Halo:
@@ -70,7 +70,7 @@ class HaloList:
 
 		self.halos = []
 
-		utils.print_msg('Reading halo file %s...' % filename)
+		print_msg('Reading halo file %s...' % filename)
 		import fileinput
 
 		#Store the redshift from the filename
@@ -82,7 +82,7 @@ class HaloList:
 		linenumber = 1
 		min_select_grid_mass = min_select_mass/(conv.M_grid*const.solar_masses_per_gram)
 		if max_select_mass:
-			utils.print_msg('Max_select_mass: %g' % max_select_mass)
+			print_msg('Max_select_mass: %g' % max_select_mass)
 			max_select_grid_mass = max_select_mass/(conv.M_grid*const.solar_masses_per_gram)
 
 		for line in fileinput.input(filename):
@@ -93,7 +93,7 @@ class HaloList:
 				fileinput.close()
 				return False
 			if linenumber % 100000 == 0:
-				utils.print_msg('Read %d lines' % linenumber)
+				print_msg('Read %d lines' % linenumber)
 			linenumber += 1
 
 			vals = line.split()

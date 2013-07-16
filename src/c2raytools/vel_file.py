@@ -1,7 +1,8 @@
-from .. import const
-from .. import conv
-from .. import utils
+import const
+import conv
+from helper_functions import print_msg
 import density_file as df
+import numpy as np
 
 class VelocityFile:
 	'''
@@ -40,7 +41,7 @@ class VelocityFile:
 		Returns:
 			Nothing
 		'''
-		utils.print_msg('Reading velocity file: %s...' % filename)
+		print_msg('Reading velocity file: %s...' % filename)
 
 		#Read raw data from velocity file
 		f = open(filename, 'rb')
@@ -56,14 +57,14 @@ class VelocityFile:
 			name = os.path.split(filename)[1]
 			self.z = float(name.split('v_')[0])
 		except:
-			utils.print_msg('Could not determine redshift from file name')
+			print_msg('Could not determine redshift from file name')
 			self.z = -1
 
 		#Convert to kms/s*(rho/8)
 		self.kmsrho8 = self.raw_velocity*conv.velconvert(z = self.z)
 
 
-		utils.print_msg('...done')
+		print_msg('...done')
 
 	def get_kms_from_density(self, density):
 		''' 

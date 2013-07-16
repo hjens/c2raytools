@@ -2,7 +2,7 @@
 
 import numpy as np
 from scipy.interpolate import interp1d
-from .. import const
+import const
 
 
 def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None):

@@ -1,23 +1,39 @@
 import numpy as np
-from .. import const
-from .. import conv
-from .. import utils
+import const
+import conv
+from helper_functions import print_msg
 from scipy import fftpack
-import pdb
 
 
 def power_spectrum_nd(input_array, box_dims = None):
-	''' Calculate the power spectrum of input_array and return it as an n-dimensional array,
+	''' 
+	Calculate the power spectrum of input_array and return it as an n-dimensional array,
 	where n is the number of dimensions in input_array
 	box_side is the size of the box in comoving Mpc. If this is set to None (default),
-	the internal box size is used'''
+	the internal box size is used
+	
+	Parameters:
+		* input_array (numpy array): the array to calculate the 
+			power spectrum of. Can be of any dimensions.
+		* box_dims = None (float or array-like): the dimensions of the 
+			box. If this is None, the current box volume is used along all
+			dimensions. If it is a float, this is taken as the box length
+			along all dimensions. If it is an array-like, the elements are
+			taken as the box length along each axis.
+	
+	Returns:
+		The power spectrum in the same dimensions as the input array.
+		
+	TODO:
+		Also return k values.
+	'''
 
 	box_dims = get_dims(box_dims, input_array.shape)
 
-	utils.print_msg( 'Calculating power spectrum...')
+	print_msg( 'Calculating power spectrum...')
 	ft = fftpack.fftshift(fftpack.fftn(input_array.astype('float64')))
 	power_spectrum = np.abs(ft)**2
-	utils.print_msg( '...done')
+	print_msg( '...done')
 
 	# scale
 	boxvol = np.product(map(float,box_dims))
@@ -27,18 +43,39 @@ def power_spectrum_nd(input_array, box_dims = None):
 	return power_spectrum
 
 def cross_power_spectrum_nd(input_array1, input_array2, box_dims):
-	''' Calculate the cross power spectrum of input_array1 and input_array2 and return it as an n-dimensional array,
-	where n is the number of dimensions in input_array'''
+	''' 
+	Calculate the cross power spectrum two arrays and return it as an n-dimensional array,
+	where n is the number of dimensions in input_array
+	box_side is the size of the box in comoving Mpc. If this is set to None (default),
+	the internal box size is used
+	
+	Parameters:
+		* input_array1 (numpy array): the first array to calculate the 
+			power spectrum of. Can be of any dimensions.
+		* input_array2 (numpy array): the second array. Must have same 
+			dimensions as input_array1.
+		* box_dims = None (float or array-like): the dimensions of the 
+			box. If this is None, the current box volume is used along all
+			dimensions. If it is a float, this is taken as the box length
+			along all dimensions. If it is an array-like, the elements are
+			taken as the box length along each axis.
+	
+	Returns:
+		The cross power spectrum in the same dimensions as the input arrays.
+		
+	TODO:
+		Also return k values.
+	'''
 
 	assert(input_array1.shape == input_array2.shape)
 
 	box_dims = get_dims(box_dims, input_array1.shape)
 
-	utils.print_msg( 'Calculating power spectrum...')
+	print_msg( 'Calculating power spectrum...')
 	ft1 = fftpack.fftshift(fftpack.fftn(input_array1.astype('float64')))
 	ft2 = fftpack.fftshift(fftpack.fftn(input_array2.astype('float64')))
 	power_spectrum = np.real(ft1)*np.real(ft2)+np.imag(ft1)*np.imag(ft2)
-	utils.print_msg( '...done')
+	print_msg( '...done')
 
 	# scale
 	#boxvol = float(box_side)**len(input_array1.shape)
@@ -51,11 +88,22 @@ def cross_power_spectrum_nd(input_array1, input_array2, box_dims):
 
 def radial_average(input_array, box_dims, kbins=10):
 	'''
-	Radially average the data in input_array
-	box_side is the length of the box in Mpc
-	kbins can be an integer specifying the number of bins,
-	or a list of bins edges. if an integer is given, the bins
-	are logarithmically spaced
+	Radially average data. Mostly for internal use.
+	
+	Parameters: 
+		* input_array (numpy array): the data array
+		* box_dims = None (float or array-like): the dimensions of the 
+			box. If this is None, the current box volume is used along all
+			dimensions. If it is a float, this is taken as the box length
+			along all dimensions. If it is an array-like, the elements are
+			taken as the box length along each axis.
+		* kbins = 10 (integer or array-like): The number of bins,
+			or a list containing the bin edges. If an integer is given, the bins
+			are logarithmically spaced.
+			
+	Returns:
+		A tuple with (data, bins), where data is an array with the 
+		averaged data and bins is an array with the bin centers.
 
 	'''
 
@@ -82,7 +130,7 @@ def radial_average(input_array, box_dims, kbins=10):
 
 	
 	#Bin the data
-	utils.print_msg('Binning data...')
+	print_msg('Binning data...')
 	nbins = len(kbins)-1
 	dk = (kbins[1:]-kbins[:-1])/2.
 	outdata = np.zeros(nbins)
@@ -210,7 +258,7 @@ def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None
 	powerspectrum[tuple(np.array(powerspectrum.shape)/2)] = 0.
 
 	#Bin the data
-	utils.print_msg('Binning data...')
+	print_msg('Binning data...')
 	outdata = np.zeros((n_mubins,n_kbins))
 	for ki in range(n_kbins):
 		kmin = kbins[ki]

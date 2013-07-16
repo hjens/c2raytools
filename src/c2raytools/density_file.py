@@ -1,7 +1,7 @@
 import numpy as np
-from .. import const
-from .. import conv
-from .. import utils 
+import const
+import conv
+from helper_functions import print_msg
 
 class DensityFile:
 	'''
@@ -43,7 +43,7 @@ class DensityFile:
 			Nothing
 		'''
 
-		utils.print_msg('Reading density file:%s ...' % filename)
+		print_msg('Reading density file:%s ...' % filename)
 		#Read raw data from density file
 		f = open(filename, 'rb')
 
@@ -63,8 +63,8 @@ class DensityFile:
 		#Convert to g/cm^3 (comoving)
 		conv_factor = const.rho_crit_0*(float(self.mesh_x)/float(conv.nbox_fine))**3*const.OmegaB
 		self.cgs_density = self.raw_density*conv_factor
-		utils.print_msg('Mean density: %g' % np.mean(self.cgs_density))
-		utils.print_msg('Critical density: %g' % const.rho_crit_0)
+		print_msg('Mean density: %g' % np.mean(self.cgs_density))
+		print_msg('Critical density: %g' % const.rho_crit_0)
 
 		#Store the redshift from the filename
 		try:
@@ -75,8 +75,8 @@ class DensityFile:
 			else:
 				self.z = float(name.split('n_')[0])
 		except:
-			utils.print_msg('Could not determine redshift from file name')
+			print_msg('Could not determine redshift from file name')
 			self.z = -1
-		utils.print_msg( '...done')
+		print_msg( '...done')
 
 

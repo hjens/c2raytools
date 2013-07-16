@@ -1,7 +1,7 @@
-from .. import const
+import const
 import numpy as np
 import density_file as df
-from .. import utils 
+from helper_functions import print_msg 
 
 class XfracFile:
 	'''
@@ -39,7 +39,7 @@ class XfracFile:
 		Returns:
 			Nothing
 		'''
-		utils.print_msg('Reading xfrac file:%s...' % filename)
+		print_msg('Reading xfrac file:%s...' % filename)
 
 		f = open(filename, 'rb')
 		temp_mesh = np.fromfile(f, count=6, dtype='int32')
@@ -52,7 +52,7 @@ class XfracFile:
 		self.xi = self.xi.reshape((self.mesh_x, self.mesh_y, self.mesh_z), order='F')
 
 		f.close()
-		utils.print_msg('...done')
+		print_msg('...done')
 
 		#Store the redshift from the filename
 		import os.path

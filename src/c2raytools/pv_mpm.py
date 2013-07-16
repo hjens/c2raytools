@@ -1,7 +1,8 @@
 import numpy as np
-from .. import const
-from .. import utils
-from .. import conv
+import const
+import conv
+from helper_functions import print_msg, get_interpolated_array
+
 
 def get_distorted_dt(dT, kms, redsh, los_axis=0, num_particles=10):
 	''' 
@@ -34,9 +35,9 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, num_particles=10):
 	#Dimensions
 	mx,my,mz = dT.shape
 
-	utils.print_msg('Making velocity-distorted box...')
-	utils.print_msg('The redshift is %.3f' % redsh)
-	utils.print_msg('The box size is %.3f cMpc' % conv.LB)
+	print_msg('Making velocity-distorted box...')
+	print_msg('The redshift is %.3f' % redsh)
+	print_msg('The box size is %.3f cMpc' % conv.LB)
 	
 	#Figure out the apparent position shift 
 	vpar = kms[los_axis,:,:,:]
@@ -51,7 +52,7 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, num_particles=10):
 	for i in range(my):
 		percent_done = int(float(i)/float(my)*100)
 		if percent_done%10 == 0 and percent_done != last_percent:
-			utils.print_msg('%d %%' % percent_done)
+			print_msg('%d %%' % percent_done)
 			last_percent = percent_done
 		for j in range(mz):
 
@@ -67,7 +68,7 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, num_particles=10):
 			cell_length = conv.LB/float(mx)
 			dr_slice_pad= get_slice(dr,i,j)
 			np.insert(dr_slice_pad,0,dr_slice_pad[-1])
-			dr_slice = utils.get_interpolated_array(dr_slice_pad, len(partpos), 'linear')
+			dr_slice = get_interpolated_array(dr_slice_pad, len(partpos), 'linear')
 			dr_slice = np.roll(dr_slice,num_particles/2)
 			partpos += dr_slice
 
@@ -84,8 +85,8 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, num_particles=10):
 			else:
 				distbox[i,j,:] = dist_slice
 
-	utils.print_msg('Old dT (mean,var): %3f, %.3f' % ( dT.mean(), dT.var()) )
-	utils.print_msg('New (mean,var): %.3f, %.3f' % (distbox.mean(), distbox.var()) )
+	print_msg('Old dT (mean,var): %3f, %.3f' % ( dT.mean(), dT.var()) )
+	print_msg('New (mean,var): %.3f, %.3f' % (distbox.mean(), distbox.var()) )
 	return distbox
 
 

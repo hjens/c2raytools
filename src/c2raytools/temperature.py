@@ -1,7 +1,8 @@
-from .. import files
 import numpy as np
-from .. import const
-from .. import utils
+import const
+from helper_functions import print_msg
+from xfrac_file import XfracFile
+from density_file import DensityFile
 
 def calc_dt(xfrac, dens, z = -1):
 	'''
@@ -18,11 +19,11 @@ def calc_dt(xfrac, dens, z = -1):
 	'''
 
 	#Figure out types of xfrac and dens
-	if isinstance(xfrac, files.XfracFile):
+	if isinstance(xfrac, XfracFile):
 		z = xfrac.z
 		xi = xfrac.xi.astype('float64')
 	elif isinstance(xfrac, str):
-		xfile = files.XfracFile(xfrac)
+		xfile = XfracFile(xfrac)
 		z = xfile.z
 		xi = xfile.xi.astype('float64')
 		if z < 0:
@@ -30,16 +31,16 @@ def calc_dt(xfrac, dens, z = -1):
 	else:
 		xi = xi.astype('float64')
 
-	if isinstance(dens, files.DensityFile):
+	if isinstance(dens, DensityFile):
 		rho = dens.raw_density.astype('float64')
 	elif isinstance(dens, str):
-		dfile = files.DensityFile(dens)
+		dfile = DensityFile(dens)
 		rho = dfile.raw_density.astype('float64')
 	else:
 		rho = dens.astype('float64')
 
-	utils.print_msg('Calculating differential brightness temperature...')
-	utils.print_msg('The redshift is %.3f' % z)
+	print_msg('Calculating differential brightness temperature...')
+	print_msg('The redshift is %.3f' % z)
 
 	rho_mean = np.mean(rho)
 
@@ -50,6 +51,6 @@ def calc_dt(xfrac, dens, z = -1):
 	Cdt = const.meandt/const.h*(1.0+z)**2/Ez
 	dt = Cdt*(1.0-xi)*rho/rho_mean
 	
-	utils.print_msg('...done')
+	print_msg('...done')
 
 	return dt
