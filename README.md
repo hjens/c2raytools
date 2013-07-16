@@ -9,7 +9,7 @@ Installation
 -------------
 Find the file `setup.py` in the root directory. To install in the standard directory, run:
 ```
-python setup.py --install
+python setup.py install
 ```
 If you do not have write permissions, or you want to install somewhere else, you can specify some other installation directory, for example:
 ```
