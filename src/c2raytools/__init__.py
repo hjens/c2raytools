@@ -1,6 +1,6 @@
 #Import sub-modules 
-import conv
-import const
+from conv import *
+from const import *
 from beam_convolve import *
 from density_file import *
 from xfrac_file import *

@@ -13,7 +13,7 @@ velocity_filename = base_path+'/coarser_densities/halos_removed/30.000v_all.dat'
 c2t.set_verbose(True)
 
 #We are using the 114/h Mpc simulation box, so set all the proper conversion factors
-c2t.conv.set_sim_constants(boxsize_cMpc = 114.)
+c2t.set_sim_constants(boxsize_cMpc = 114.)
 
 #Read density
 dfile = c2t.DensityFile(density_filename)
