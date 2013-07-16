@@ -145,13 +145,24 @@ def radial_average(input_array, box_dims, kbins=10):
 	
 
 def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None):
-	''' Calculate the power spectrum of input_array_nd (2 or 3 dimensions)
-	and return it as a one-dimensional array 
-	- input_array_nd is the data array
-	- bins can be an array of k bin edges, a number of bins or None. If None is used,
-	a faster binning algorithm is used, but the number and position of the bins are
-	unspecified.
-	Return P(k), k (in Mpc^-1)'''
+	''' Calculate the spherically averaged power spectrum of an array 
+	and return it as a one-dimensional array.
+	
+	Parameters: 
+		* input_array_nd (numpy array): the data array
+		* kbins = 100 (integer or array-like): The number of bins,
+			or a list containing the bin edges. If an integer is given, the bins
+			are logarithmically spaced.
+		* box_dims = None (float or array-like): the dimensions of the 
+			box. If this is None, the current box volume is used along all
+			dimensions. If it is a float, this is taken as the box length
+			along all dimensions. If it is an array-like, the elements are
+			taken as the box length along each axis.
+			
+	Returns: 
+		A tuple with (Pk, bins), where Pk is an array with the 
+		power spectrum and bins is an array with the k bin centers.
+	'''
 
 	box_dims = get_dims(box_dims, input_array_nd.shape)
 
@@ -160,9 +171,25 @@ def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None):
 	return radial_average(input_array, kbins=kbins, box_dims=box_dims)
 
 def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dims=None):
-	''' Calculate the power spectrum of input_array_nd (2 or 3 dimensions)
-	and return it as a one-dimensional array 
-	Return P(k) [Mpc^3], k [Mpc^-1]'''
+	''' Calculate the spherically averaged cross power spectrum of two arrays 
+	and return it as a one-dimensional array.
+	
+	Parameters: 
+		* input_array1_nd (numpy array): the first data array
+		* input_array2_nd (numpy array): the second data array
+		* kbins = 100 (integer or array-like): The number of bins,
+			or a list containing the bin edges. If an integer is given, the bins
+			are logarithmically spaced.
+		* box_dims = None (float or array-like): the dimensions of the 
+			box. If this is None, the current box volume is used along all
+			dimensions. If it is a float, this is taken as the box length
+			along all dimensions. If it is an array-like, the elements are
+			taken as the box length along each axis.
+			
+	Returns: 
+		A tuple with (Pk, bins), where Pk is an array with the 
+		cross power spectrum and bins is an array with the k bin centers.
+	'''
 
 	box_dims = get_dims(box_dims, input_array1_nd.shape)
 
@@ -174,10 +201,26 @@ def power_spectrum_mu(input_array, los_axis = 0, mubins=20, kbins=10, box_dims =
 	'''
 	Calculate the power spectrum and bin it in mu=cos(theta) and k
 	input_array is the array to calculate the power spectrum from
-	los_axis is the line of sight axis (default 0)
-	mubins is the number of (linearly spaced) bins in mu or a list of bin edges
-	kbins is the number of (log spaced) bins in k or a list of bin edges
-	return Pk [Mpc^3] dim=(n_mubins,n_kbins), mu, k[Mpc^-1]
+	
+	Parameters: 
+		* input_array (numpy array): the data array
+		* los_axis = 0 (integer): the line-of-sight axis
+		* mubins = 20 (integer): the number of mu bins
+		* kbins = 10 (integer or array-like): The number of bins,
+			or a list containing the bin edges. If an integer is given, the bins
+			are logarithmically spaced.
+		* box_dims = None (float or array-like): the dimensions of the 
+			box. If this is None, the current box volume is used along all
+			dimensions. If it is a float, this is taken as the box length
+			along all dimensions. If it is an array-like, the elements are
+			taken as the box length along each axis.
+			
+	Returns: 
+		A tuple with (Pk, mubins, kbins), where Pk is an array with the 
+		power spectrum of dimensions (n_mubins x n_kbins), 
+		mubins is an array with the mu bin centers and
+		kbins is an array with the k bin centers.
+	
 	'''
 
 	box_dims = get_dims(box_dims, input_array.shape)
@@ -190,26 +233,40 @@ def power_spectrum_mu(input_array, los_axis = 0, mubins=20, kbins=10, box_dims =
 def cross_power_spectrum_mu(input_array1, input_array2, los_axis = 0, mubins=20, kbins=10, box_dims = None, weights=None):
 	'''
 	Calculate the cross power spectrum and bin it in mu=cos(theta) and k
-	input_array1 and input_array2 are the arrays to calculate the power spectrum from
-	los_axis is the line of sight axis (default 0)
-	mubins is the number of (linearly spaced) bins in mu or a list of bin edges
-	kbins is the number of (log spaced) bins in k or a list of bin edges
-	return Pk [Mpc^3] dim=(n_mubins,n_kbins), mu, k[Mpc^-1]
+	input_array is the array to calculate the power spectrum from
+	
+	Parameters: 
+		* input_array1 (numpy array): the first data array
+		* input_array2 (numpy array): the second data array
+		* los_axis = 0 (integer): the line-of-sight axis
+		* mubins = 20 (integer): the number of mu bins
+		* kbins = 10 (integer or array-like): The number of bins,
+			or a list containing the bin edges. If an integer is given, the bins
+			are logarithmically spaced.
+		* box_dims = None (float or array-like): the dimensions of the 
+			box. If this is None, the current box volume is used along all
+			dimensions. If it is a float, this is taken as the box length
+			along all dimensions. If it is an array-like, the elements are
+			taken as the box length along each axis.
+		
+	Returns: 
+		A tuple with (Pk, mubins, kbins), where Pk is an array with the 
+		cross power spectrum of dimensions (n_mubins x n_kbins), 
+		mubins is an array with the mu bin centers and
+		kbins is an array with the k bin centers.
 	'''
 
 	box_dims = get_dims(box_dims, input_array1.shape)
-
+	
 	#Calculate the power spectrum
 	powerspectrum = cross_power_spectrum_nd(input_array1, input_array2, box_dims=box_dims)	
-
+	
 	return mu_binning(powerspectrum, los_axis, mubins, kbins, box_dims, weights)
 
 
 def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None, weights=None):
-	'''
-	Bin a power spectrum in mu and k. For internal use
-	'''
-
+	#This function is for internal use only.
+	
 	if weights != None:
 		powerspectrum *= weights
 

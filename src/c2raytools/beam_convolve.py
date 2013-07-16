@@ -24,7 +24,7 @@ def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, b
 	
 	Returns:
 		The convolved array (a numpy array with the same dimensions
-		as input_array.
+		as input_array).
 	'''
 
 	if (not beam_w) and (not max_baseline):

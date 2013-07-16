@@ -11,14 +11,15 @@ class XfracFile:
 	pass the filename to the constructor.
 	
 	Some useful attributes of this class are:
-	xi -- the ionized fraction
-	z -- the redshift of the file (-1 if it couldn't be determined from the file name)
+		* xi (numpy array): the ionized fraction
+		* z (float): the redshift of the file (-1 if it couldn't be determined from the file name)
 	
 	'''
 	def __init__(self, filename = None, old_format=False):
 		'''
 		Initialize the file. If filename is given, read data. Otherwise,
 		do nothing.
+		
 		Parameters:
 			* filename = None (string): the file to read from.
 			* old_format = False (bool): whether to use the old-style 
@@ -32,6 +33,7 @@ class XfracFile:
 	def read_from_file(self, filename, old_format=False):
 		'''
 		Read data from file.
+		
 		Parameters:
 			* filename (string): the file to read from.
 			* old_format = False (bool): whether to use the old-style (32 bits)
@@ -60,7 +62,7 @@ class XfracFile:
 			name = os.path.split(filename)[1]
 			self.z = float(name.split('_')[1][:-4])
 		except:
-			utils.print_msg('Could not determine redshift from file name')
+			print_msg('Could not determine redshift from file name')
 			self.z = -1
 
 

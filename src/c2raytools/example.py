@@ -39,7 +39,7 @@ kms = vfile.get_kms_from_density(dfile)
 print 'Gas velocity at cell (100,100,100) is ', kms[:,100,100,100], 'km/s'
 
 #Calculate neutral hydrogen number density
-n_hi = dfile.cgs_density*xfile.xi/c2t.const.m_p
+n_hi = dfile.cgs_density*xfile.xi/c2t.m_p
 
 #Calculate differential brightness temperature
 dT = c2t.calc_dt(xfile, dfile)
@@ -48,7 +48,7 @@ dT = c2t.calc_dt(xfile, dfile)
 dT_slice = dT[128,:,:]
 
 #Convolve with a Gaussian beam, assuming a 2 km maximum baseline
-dT_slice_conv = c2t.beam_convolve(dT_slice, xfile.z, c2t.conv.boxsize, max_baseline=2000.) 
+dT_slice_conv = c2t.beam_convolve(dT_slice, xfile.z, c2t.boxsize, max_baseline=2000.) 
 
 #Plot some stuff
 pl.figure()

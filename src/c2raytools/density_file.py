@@ -11,9 +11,10 @@ class DensityFile:
 	pass the filename to the constructor.
 	
 	Some useful attributes of this class are:
-	raw_density -- the density in simulation units
-	cgs_density -- the density in cgs units
-	z -- the redshift of the file (-1 if it couldn't be determined from the file name)
+	
+	* raw_density (numpy array): the density in simulation units
+	* cgs_density (numpy array): the density in cgs units
+	* z (float): the redshift of the file (-1 if it couldn't be determined from the file name)
 	
 	'''
 	
@@ -35,6 +36,7 @@ class DensityFile:
 	def read_from_file(self, filename, old_format = False):
 		'''
 		Read data from file.
+		
 		Parameters:
 			* filename (string): the file to read from.
 			* old_format = False (bool): whether to use the old-style 

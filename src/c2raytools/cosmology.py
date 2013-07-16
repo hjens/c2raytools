@@ -4,8 +4,8 @@ import numpy as np
 from scipy.integrate import quadrature
 
 def ldist(z):
-	'''This function is used for the integration in lumdist 
-	Only meant for internal use '''
+	# This function is used for the integration in lumdist  
+	# Only meant for internal use.
 	term1 = (1+z)**2
 	term2 =  1.+2.*(const.q0+const.lam)*z
 	term3 = z*(2.+z)*const.lam
@@ -23,7 +23,15 @@ def ldist(z):
 
 
 def lumdist(z, k=0):
-	''' Calculate the luminosity distance for redshift z '''
+	''' Calculate the luminosity distance for a given redshift.
+	
+	Parameters:
+		* z (float or array): the redshift(s)
+		* k = 0 (float): the curvature constant.
+		
+	Returns:
+		The luminosity distance in Mpc
+	 '''
 
 	if not (type(z) is np.ndarray): #Allow for passing a single z
 		z = np.array([z])
@@ -31,7 +39,7 @@ def lumdist(z, k=0):
 
 	if const.lam == 0:
 		denom = np.sqrt(1+2*const.q0*z) + 1 + const.q0*z 
-		dlum = (const.c*z/const.h0)*(1 + z*(1-const.q0)/denom)
+		dlum = (const.c*z/const.H0)*(1 + z*(1-const.q0)/denom)
 		return dlum
 	else:
 		dlum = np.zeros(n)
@@ -49,10 +57,16 @@ def lumdist(z, k=0):
 
 
 def zang(dl, z):
-	''' Calculate the angular size of an object. 
-	dl is the physical size in kpc
-	z is the redshift of the object
-	The result is given in arcseconds '''
+	''' Calculate the angular size of an object at a given
+	redshift.
+	
+	Parameters:
+		* dl (float): the physical size in kpc
+		* z (float): the redshift of the object
+		
+	Returns:
+		The angluar size in arcseconds 
+	'''
 
 	angle = 180./(3.1415)*3600.*dl*(1+z)**2/(1000*lumdist(z))
 	if len(angle) == 1:

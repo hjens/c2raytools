@@ -6,8 +6,16 @@ import const
 
 
 def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None):
-	''' Make a list of xfrac files in xfrac_dir with redshifts between min_z and max_z 
-	Return the redhifts of the files '''
+	''' 
+	Make a list of the redshifts of all the xfrac files in a directory.
+	
+	Parameters:
+		* xfrac_dir (string): the directory to look in
+		* min_z = None (float): the minimum redshift to include (if given)
+		* max_z = None (float): the maximum redshift to include (if given)
+	 
+	Returns: 
+		The redhifts of the files (numpy array of floats) '''
 
 	#Make a list of xfrac files to be read, in the correct redshift interval
 	import glob
@@ -32,8 +40,16 @@ def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None):
 	return np.array(redshifts)
 
 def get_dens_redshifts(dens_dir, min_z = None, max_z = None):
-	''' Make a list of density files in density_dir with redshifts between min_z and max_z 
-	Return the redhifts of the files '''
+	''' 
+	Make a list of the redshifts of all the density files in a directory.
+	
+	Parameters:
+		* dens_dir (string): the directory to look in
+		* min_z = None (float): the minimum redshift to include (if given)
+		* max_z = None (float): the maximum redshift to include (if given)
+	 
+	Returns: 
+		The redhifts of the files (numpy array of floats) '''
 
 	#Make a list of xfrac files to be read, in the correct redshift interval
 	import glob
@@ -67,9 +83,16 @@ def flt_comp(x,y, epsilon=0.0001):
 	return abs(x-y) < epsilon
 
 def get_interpolated_array(in_array, new_len, kind='nearest'):
-	''' Get a higher-res version of in_array 
-	new_len gives the length of the new array, kind gives the
-	type of interpolation to perform ''' 
+	''' Get a higher-res version of an array.
+	
+	Parameters:
+		* in_array (numpy array): the array to upscale
+		* new_len (integer): the new length of the array
+		* kind = 'nearest' (string): the type of interpolation to use
+		
+	Returns:
+		The upscaled array. 
+	''' 
 
 	old_len = len(in_array)
 	func = interp1d(np.linspace(0,1,old_len), in_array, kind=kind)
@@ -77,7 +100,17 @@ def get_interpolated_array(in_array, new_len, kind='nearest'):
 	return out_array
 
 def read_binary_with_meshinfo(filename, bits=32, order='F'):
-	''' Read a binary file with three inital integers '''
+	''' Read a binary file with three inital integers (a cbin file).
+	
+	Parameters:
+		* filename (string): the filename to read from
+		* bits = 32 (integer): the number of bits in the file
+		* order = 'F' (string): the ordering of the data. Can be 'C'
+			for C style ordering, or 'F' for fortran style.
+			
+	Returns:
+		The data as a three dimensional numpy array.
+	'''
 
 	#import struct
 	#from scipy.io.numpyio import fread
@@ -91,13 +124,24 @@ def read_binary_with_meshinfo(filename, bits=32, order='F'):
 	mesh_x, mesh_y, mesh_z = temp_mesh
 
 	#data = fread(f, mesh_x*mesh_y*mesh_z,'f')
-	datatype = dtype=(bits==32 and np.float32 or np.float64)
+	datatype = (bits==32 and np.float32 or np.float64)
 	data = np.fromfile(f, dtype=datatype,count=mesh_x*mesh_y*mesh_z)
 	data = data.reshape((mesh_x, mesh_y, mesh_z), order=order)
 	return data.astype('float64')
 
 def save_binary_with_meshinfo(filename, data, bits=32, order='F'):
-	''' Save a binary file with three inital integers '''
+	''' Save a binary file with three inital integers (a cbin file).
+	
+	Parameters:
+		* filename (string): the filename to save to
+		* data (numpy array): the data to save
+		* bits = 32 (integer): the number of bits in the file
+		* order = 'F' (string): the ordering of the data. Can be 'C'
+			for C style ordering, or 'F' for fortran style.
+			
+	Returns:
+		Nothing
+	'''
 	assert(bits ==32 or bits==64)
 	f = open(filename, 'wb')
 	mesh = np.array(data.shape).astype('int32')
@@ -108,5 +152,14 @@ def save_binary_with_meshinfo(filename, data, bits=32, order='F'):
 
 verbose = False
 def set_verbose(verb):
+	'''
+	Turn on or off verbose mode.
+	
+	Parameters:
+		* verb (bool): whether or not to be verbose
+		
+	Returns:
+		Nothing
+	'''
 	global verbose
 	verbose = verb

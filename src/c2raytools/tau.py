@@ -49,8 +49,8 @@ def tau(ionfractions, redshifts):
 #	temp = open('tau_z.txt', 'w')
 #	savetxt(temp, tau_z, delimiter='\n')
 #	temp.close()
-
-	from pylab import *
+#
+#	from pylab import *
 	#figure()
 	#plot(tau_z, tau0, '+-')
 	#xlabel('z')

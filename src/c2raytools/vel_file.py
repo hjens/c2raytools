@@ -12,8 +12,10 @@ class VelocityFile:
 	pass the filename to the constructor.
 	
 	Some useful attributes of this class are:
-	raw_velocity -- the velocity in simulation units
-	z -- the redshift of the file (-1 if it couldn't be determined from the file name)
+	
+	* raw_velocity (numpy array): the velocity in simulation units
+	* z (float): the redshift of the file (-1 if it couldn't be determined from the file name)
+	
 	To get the velocity in km/s, use get_kms_from_density
 	
 	'''

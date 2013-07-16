@@ -25,7 +25,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="c2raytools 1.0 documentation" href="#" /> 
+    <link rel="top" title="c2raytools 1.0 documentation" href="#" />
+    <link rel="next" title="Tutorial" href="tutorial.html" /> 
   </head>
   <body>
     <div class="related">
@@ -34,6 +35,12 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorial"
+             accesskey="N">next</a> |</li>
         <li><a href="#">c2raytools 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>  
@@ -45,10 +52,62 @@
             
   <div class="section" id="welcome-to-c2raytools-s-documentation">
 <h1>Welcome to c2raytools&#8217;s documentation!<a class="headerlink" href="#welcome-to-c2raytools-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="about-c2raytools">
+<h2>About c2raytools<a class="headerlink" href="#about-c2raytools" title="Permalink to this headline">¶</a></h2>
+<p><tt class="xref py py-mod docutils literal"><span class="pre">c2raytools</span></tt> is a Python module for reading and analyzing data files produced by C2Ray and CubeP3M. In addition to providing a Python interface for reading data and converting to physically meaningful units, it provides functions for calculating derived quantities such as brightness temperature and statistics such as power spectra. There are also functions for converting data to redshift space and to produce lightcone boxes.</p>
+</div>
+<div class="section" id="installation">
+<h2>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h2>
+<p>First, download the necessary files from <a class="reference external" href="https://github.com/hjens/c2raytools">GitHub</a>. You can do this easily by running the command:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">clone</span> <span class="n">https</span><span class="p">:</span><span class="o">//</span><span class="n">github</span><span class="o">.</span><span class="n">com</span><span class="o">/</span><span class="n">hjens</span><span class="o">/</span><span class="n">c2raytools</span>
+</pre></div>
+</div>
+<p>Then <tt class="docutils literal"><span class="pre">cd</span></tt> into the newly created directory run the <tt class="xref py py-mod docutils literal"><span class="pre">setup.py</span></tt> script to install it:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span>
+</pre></div>
+</div>
+<p>This will install the package to your default Python directory. You may have to add a <tt class="docutils literal"><span class="pre">sudo</span></tt> before the command. If you do not have write permission to this directory, you can install <tt class="xref py py-mod docutils literal"><span class="pre">c2raytools</span></tt> to some custom directory as such:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">python</span> <span class="n">setup</span><span class="o">.</span><span class="n">py</span> <span class="n">install</span> <span class="o">--</span><span class="n">home</span><span class="o">=~/</span><span class="n">mydir</span>
+</pre></div>
+</div>
+<p>In this case, you would have to make sure the directory you are installing to is in your PYTHONPATH.</p>
+</div>
+<div class="section" id="updating-to-the-latest-version">
+<h2>Updating to the latest version<a class="headerlink" href="#updating-to-the-latest-version" title="Permalink to this headline">¶</a></h2>
+<p>All updates to <tt class="xref py py-mod docutils literal"><span class="pre">c2raytools</span></tt> are published on GitHub. To update your installation to the latest version, first <tt class="docutils literal"><span class="pre">cd</span></tt> into the directory where you first downloaded <tt class="xref py py-mod docutils literal"><span class="pre">c2raytools</span></tt>, and run:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">git</span> <span class="n">pull</span> <span class="n">origin</span>
+</pre></div>
+</div>
+<p>Then run the <tt class="xref py py-mod docutils literal"><span class="pre">setup.py</span></tt> scipt again, in the same way as before. If you deleted the downloaded files, you can update by simply repeating the installation procedure as described above.</p>
+</div>
+<div class="section" id="dependencies">
+<h2>Dependencies<a class="headerlink" href="#dependencies" title="Permalink to this headline">¶</a></h2>
+<p><tt class="xref py py-mod docutils literal"><span class="pre">c2raytools</span></tt> requires <tt class="xref py py-mod docutils literal"><span class="pre">numpy</span></tt> to work. To visualize data, <tt class="xref py py-mod docutils literal"><span class="pre">matplotlib</span></tt> is recommended.</p>
+</div>
+<div class="section" id="documentation">
+<h2>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h2>
 <p>Contents:</p>
 <div class="toctree-wrapper compound">
-<ul class="simple">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="tutorial.html">Tutorial</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#introduction">Introduction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#reading-files">Reading files</a></li>
+<li class="toctree-l2"><a class="reference internal" href="tutorial.html#analyzing-files">Analyzing files</a></li>
 </ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="reading_files.html">File classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="analysis.html">Various analysis functions</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="analysis.html#module-c2raytools.temperature">Derived quantities and basic statistics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analysis.html#module-c2raytools.power_spectrum">Power spectra</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analysis.html#module-c2raytools.pv_mpm">Line-of-sight effects</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analysis.html#module-c2raytools.cosmology">Cosmology</a></li>
+<li class="toctree-l2"><a class="reference internal" href="analysis.html#module-c2raytools.beam_convolve">Miscellaneous</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="constants.html">Constants and conversion factors</a></li>
+<li class="toctree-l1"><a class="reference internal" href="utilities.html">Utility functions</a></li>
+</ul>
+</div>
 </div>
 </div>
 <div class="section" id="indices-and-tables">
@@ -69,11 +128,21 @@
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
 <li><a class="reference internal" href="#">Welcome to c2raytools&#8217;s documentation!</a><ul>
+<li><a class="reference internal" href="#about-c2raytools">About c2raytools</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#updating-to-the-latest-version">Updating to the latest version</a></li>
+<li><a class="reference internal" href="#dependencies">Dependencies</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a><ul>
+</ul>
+</li>
 </ul>
 </li>
 <li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
 </ul>
 
+  <h4>Next topic</h4>
+  <p class="topless"><a href="tutorial.html"
+                        title="next chapter">Tutorial</a></p>
   <h3>This Page</h3>
   <ul class="this-page-menu">
     <li><a href="_sources/index.txt"
@@ -102,12 +171,18 @@
         <li class="right" style="margin-right: 10px">
           <a href="genindex.html" title="General Index"
              >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="tutorial.html" title="Tutorial"
+             >next</a> |</li>
         <li><a href="#">c2raytools 1.0 documentation</a> &raquo;</li> 
       </ul>
     </div>
     <div class="footer">
         &copy; Copyright 2013, Hannes Jensen.
-      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.2.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
     </div>
   </body>
 </html>
