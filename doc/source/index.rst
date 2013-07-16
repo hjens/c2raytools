@@ -6,6 +6,10 @@
 Welcome to c2raytools's documentation!
 ======================================
 
+About c2raytools
+----------------
+:mod:`c2raytools` is a Python module for reading and analyzing data files produced by C2Ray and CubeP3M. In addition to providing a Python interface for reading data and converting to physically meaningful units, it provides functions for calculating derived quantities such as brightness temperature and statistics such as power spectra. There are also functions for converting data to redshift space and to produce lightcone boxes.
+
 Contents:
 
 .. toctree::
