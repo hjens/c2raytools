@@ -24,7 +24,7 @@ This will install the package to your default Python directory. You may have to 
 
 >>> python setup.py install --home=~/mydir
 
-In this case, you would have to make sure the directory you are installing to is in your PYTHONPATH.
+In this case, you have to make sure the directory you are installing to is in your PYTHONPATH.
 
 Updating to the latest version
 ------------------------------
@@ -37,6 +37,8 @@ Then run the :mod:`setup.py` scipt again, in the same way as before. If you dele
 Dependencies
 ------------
 :mod:`c2raytools` requires :mod:`numpy` to work. To visualize data, :mod:`matplotlib` is recommended.
+
+.. _documentation:
 
 Documentation
 --------------

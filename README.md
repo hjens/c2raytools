@@ -5,6 +5,8 @@ A simple Python module for reading and analyzing data from C2Ray and CubeP3M dat
 
 See the `example.py` file for some simple usage, `example_pv.py` for how to calculate peculiar velocity distortions and `example_freqbox.py` for how to make a time evolving box.
 
+For documentation, look [here](http://ttt.astro.su.se/~hjens/c2raytools/).
+
 Installation
 -------------
 Find the file `setup.py` in the root directory. To install in the standard directory, run:

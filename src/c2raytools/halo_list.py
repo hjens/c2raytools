@@ -24,7 +24,10 @@ class HaloList:
 	'''
 	A class that holds information about a large number of halos, as read from a 
 	halo list file.
-	Contains methods to select halos based on different criteria.
+	Contains methods to select halos based on different criteria. This file is very slow
+	if you need to read a large number of halos.
+	
+	TODO: write a better implementation of this class.
 	'''
 	def __init__(self, filename=None, min_select_mass = 0.0, max_select_mass = None, 
 			max_select_number=-1, startline = 0):
@@ -35,11 +38,11 @@ class HaloList:
 		Parameters:
 			* filename = None (string): The file to read from
 			* min_select_mass = 0.0 (float): The lower threshold mass in solar masses.
-			Only halos above this mass will be read.
+				Only halos above this mass will be read.
 			* max_select_mass = None (float): The upper threshold mass in solar masses.
-			Only halos below this mass will be read. If None, there is no limit.
+				Only halos below this mass will be read. If None, there is no limit.
 			* max_select_number = -1 (int): The max number of halos to read. If -1, there
-			is no limit.
+				is no limit.
 			* startline = 0 (int): The line in the file where reading will start.
 		Returns:
 			Nothing
@@ -58,14 +61,14 @@ class HaloList:
 		Parameters:
 			* filename (string): The file to read from
 			* min_select_mass = 0.0 (float): The lower threshold mass in solar masses.
-			Only halos above this mass will be read.
+				Only halos above this mass will be read.
 			* max_select_mass = None (float): The upper threshold mass in solar masses.
-			Only halos below this mass will be read. If None, there is no limit.
+				Only halos below this mass will be read. If None, there is no limit.
 			* max_select_number = -1 (int): The max number of halos to read. If -1, there
-			is no limit.
+				is no limit.
 			* startline = 0 (int): The line in the file where reading will start.
 		Returns:
-			Return True if all the halos were read. False otherwise.
+			True if all the halos were read. False otherwise.
 		'''
 
 		self.halos = []
