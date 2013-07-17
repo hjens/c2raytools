@@ -50,6 +50,7 @@ Contents:
 
     tutorial
     reading_files
+    visualization
     analysis
     constants
     utilities

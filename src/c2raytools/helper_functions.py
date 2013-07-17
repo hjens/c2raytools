@@ -3,6 +3,8 @@
 import numpy as np
 from scipy.interpolate import interp1d
 import const
+import os
+
 
 
 def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None):
@@ -149,6 +151,66 @@ def save_binary_with_meshinfo(filename, data, bits=32, order='F'):
 	datatype = (np.float32 if bits==32 else np.float64)
 	data.flatten(order=order).astype(datatype).tofile(f)
 	f.close()
+
+def determine_filetype(filename):
+	'''
+	Try to figure out what type of data is in filename.
+	
+	Parameters:
+		* filename (string): the filename. May include the full
+			path.
+		
+	Returns:
+		A string with the data type. Possible values are:
+		'xfrac', 'density', 'velocity', 'unknown'
+		
+	'''
+	
+	filename = os.path.basename(filename)
+	
+	if 'xfrac3d' in filename:
+		return 'xfrac'
+	elif 'n_all' in filename:
+		return 'density'
+	elif 'v_all' in filename:
+		return 'velocity'
+	return 'unknown'
+
+def get_data_and_type(indata):
+	'''
+	Extract the actual data from an object (which may
+	be a file object or a filename to be read), and
+	determine what type of data it is.
+	
+	Parameters:
+		* indata (XfracFile, DensityFile, string or numpy array): the data
+		
+	Returns:
+		* A tuple with (outdata, type), where outdata is a numpy array 
+		containing the actual data and type is a string with the type 
+		of data. Possible values for type are 'xfrac', 'density', 
+		and 'unknown'
+		
+	'''
+	import c2raytools.density_file
+	import c2raytools.xfrac_file
+
+	if isinstance(indata, c2raytools.xfrac_file.XfracFile):
+		return indata.xi, 'xfrac'
+	elif isinstance(indata, c2raytools.density_file.DensityFile):
+		return indata.cgs_density, 'density'
+	elif isinstance(indata, str):
+		filetype = determine_filetype(indata)
+		if filetype == 'xfrac':
+			return get_data_and_type(c2raytools.xfrac_file.XfracFile(indata))
+		elif filetype == 'density':
+			return get_data_and_type(c2raytools.density_file.DensityFile(indata))
+		else:
+			raise Exception('Unknown file type')
+	elif isinstance(indata, np.ndarray):
+		return indata, 'unknown'
+	raise Exception('Could not determine type of data')
+		
 
 verbose = False
 def set_verbose(verb):
