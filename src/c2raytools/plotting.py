@@ -118,6 +118,23 @@ def plot_hist(data, logscale = False, **kwargs):
     elif datatype == 'density':
         pl.xlabel('$\\rho \; \mathrm{[g \; cm^{-3}]}$')
         
+if __name__ == '__main__':
+    import c2raytools as c2t
+    import pylab as pl
+    
+    c2t.set_verbose(True)
+    
+    pl.figure()
+    
+    dfilename = '/disk/sn-12/garrelt/Science/Simulations/Reionization/C2Ray_WMAP5/114Mpc_WMAP5/coarser_densities/nc256_halos_removed/6.905n_all.dat'
+    xfilename = '/disk/sn-12/garrelt/Science/Simulations/Reionization/C2Ray_WMAP5/114Mpc_WMAP5/114Mpc_f2_10S_256/results_ranger/xfrac3d_8.958.bin'
+    
+    dfile = c2t.DensityFile(dfilename)
+#    plot_slice(dfile, los_axis=1, logscale=True, cmap=pl.cm.hot)
+#    ax2 = pl.subplot(1,2,2)
+#    plot_slice(xfilename)
+    plot_slice(c2t.XfracFile(xfilename))
+    pl.show()
     
     
     
