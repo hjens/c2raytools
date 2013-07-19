@@ -89,6 +89,8 @@ def freq_box(xfrac_dir, dens_dir, z_low, z_high):
 	output_z, output_freq = freq_axis(z_low, z_high)
 	output_z = output_z[output_z > dens_redshifts[0]]
 	output_z = output_z[output_z < dens_redshifts[-1]]
+	if len(output_z) < 1:
+		raise Exception('No valid redshifts in range!')
 
 	print_msg( 'Number of slices reduced to: %d' % len(output_z) )
 
