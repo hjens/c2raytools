@@ -66,7 +66,7 @@ def freq_box(xfrac_dir, dens_dir, z_low, z_high):
 		the lightcone quantities. redshifts is an array containing the 
 		redshift for each slice.
 		
-	Note:
+	.. note::
 		Since this function relies on filenames to get redshifts,
 		all the data files must follow the common naming convenstions.
 		Ionization files must be named xfrac3d_z.bin and densityfiles

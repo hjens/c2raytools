@@ -151,6 +151,42 @@ def save_binary_with_meshinfo(filename, data, bits=32, order='F'):
 	datatype = (np.float32 if bits==32 else np.float64)
 	data.flatten(order=order).astype(datatype).tofile(f)
 	f.close()
+	
+def read_fits(filename):
+	'''
+	Read a fits file and return the data as a numpy array
+	
+	Parameters:
+		* filename (string): the fits file to read
+		
+	Returns:
+		numpy array containing the data
+	'''
+	
+	import pyfits as pf
+	
+	return pf.open(filename)[0].data
+
+def save_fits(data, filename):
+	'''
+	Save data as a fits file. The data can be a file object,
+	a file to read or a pure data array.
+	
+	Parameters:
+		* indata (XfracFile, DensityFile, string or numpy array): the data to save
+		* filename (string): the file to save to
+		
+	Returns:
+		Nothing
+	
+	'''
+	import pyfits as pf
+	
+	save_data, datatype = get_data_and_type(data)
+	
+	hdu = pf.PrimaryHDU(save_data)
+	hdulist = pf.HDUList([hdu])
+	hdulist.writeto(filename, clobber=True)
 
 def determine_filetype(filename):
 	'''

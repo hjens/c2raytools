@@ -387,6 +387,10 @@ dt:target, .highlighted {
     background-color: #fbe54e;
 }
 
+.function {
+	background-color: #d2d2d2;
+}
+
 dl.glossary dt {
     font-weight: bold;
     font-size: 1.1em;
@@ -477,7 +481,8 @@ table.highlighttable td {
 tt.descname {
     background-color: transparent;
     font-weight: bold;
-    font-size: 1.2em;
+    /*font-size: 1.2em;*/
+	font-size: 150%;
 }
 
 tt.descclassname {

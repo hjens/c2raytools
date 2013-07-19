@@ -36,7 +36,7 @@ Then run the :mod:`setup.py` scipt again, in the same way as before. If you dele
 
 Dependencies
 ------------
-:mod:`c2raytools` requires :mod:`numpy` to work. To visualize data, :mod:`matplotlib` is recommended.
+:mod:`c2raytools` requires :mod:`numpy` and :mod:`scipy` to work. To visualize data, :mod:`matplotlib` is recommended.
 
 .. _documentation:
 

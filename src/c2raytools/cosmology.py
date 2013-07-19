@@ -134,8 +134,10 @@ def cdist_to_z(dist):
 		redshift corresponding to the distance.
 
 		.. note::
-		Uses a precalculated table for interpolation. Only valid for 
-		0 < z < 100 '''
+			Uses a precalculated table for interpolation. Only valid for 
+			0 < z < 100 
+		
+	'''
 
 	func = interp1d(precalc_table_cdist, precalc_table_z, kind='cubic')
 	z = func(dist)
@@ -147,11 +149,12 @@ def zang(dl, z):
 	redshift.
 	
 	Parameters:
-		* dl (float): the physical size in kpc
-		* z (float): the redshift of the object
+		* dl (float or array): the physical size in kpc
+		* z (float or array): the redshift of the object
 		
 	Returns:
 		The angluar size in arcseconds 
+		
 	'''
 
 	angle = 180./(3.1415)*3600.*dl*(1+z)**2/(1000*lumdist(z))
@@ -164,10 +167,11 @@ def nu_to_z(nu21):
 	''' Convert 21 cm frequency in MHz to redshift 
 
 	Parameters:
-		* nu21 (float): redshifted 21 cm frequency in MHz
+		* nu21 (float or array): redshifted 21 cm frequency in MHz
 
 	Returns:
 		Redshift
+		
 	'''
 	return const.nu0/nu21-1
 
@@ -175,10 +179,11 @@ def z_to_nu(z):
 	''' Get the 21 cm frequency that corresponds to redshift z 
 
 	Parameters:
-		* z (float): redshifts
+		* z (float or array): redshift
 
 	Returns:
 		redshifted 21 cm frequency in MHz
+		
 	'''
 	return const.nu0/(1.+z)
 
@@ -186,7 +191,7 @@ def nu_to_cdist(nu21):
 	''' Calculate the comoving distance to a given 21 cm frequency 
 
 	Parameters:
-		* nu21 (float): redshifted 21 cm frequency in MHz
+		* nu21 (float or array): redshifted 21 cm frequency in MHz
 
 	Returns:
 		Comoving distance in Mpc
