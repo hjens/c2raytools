@@ -14,7 +14,9 @@ c2t.set_verbose(True)
 c2t.conv.set_sim_constants(boxsize_cMpc = 114.)
 
 #Make the boxes
-xcube, dcube, dtcube, z = c2t.freq_box(xfrac_dir, density_dir, z_low=7.0, cube_slices=500)
+xcube, dcube, dtcube, z = c2t.freq_box(xfrac_dir, density_dir, z_low=7.0, \
+                                       z_high=7.3)
+print dtcube.shape
 
 #Plot the dT box
 pl.imshow(dtcube[0,:,:], extent=[z.min(),z.max(), 0, c2t.conv.LB], aspect='auto')

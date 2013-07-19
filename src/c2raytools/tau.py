@@ -16,7 +16,9 @@ def tau(ionfractions, redshifts, num_points = 50):
 		
 	Returns:
 		Tuple containing (tau_0, tau_z)
+		
 		tau_0 is the optical depth at each redshift
+		
 		tau_z is the corresponding redshift
 		
 	Notes:
@@ -26,6 +28,7 @@ def tau(ionfractions, redshifts, num_points = 50):
 	Example:
 		To calculate the optical depth for a scenario where the Universe is instantaneously
 		reionized:
+		
 		>>> z_reion = 11.
 		>>> redshifts = np.linspace(z_reion, 1100., 50)
 		>>> ionfractions = np.zeros(len(redshifts))

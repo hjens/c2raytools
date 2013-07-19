@@ -17,9 +17,21 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, num_particles=10):
 		* redsh (float): the redshift
 		* los_axis = 0 (int): the line-of-sight axis (must be 0, 1 or 2)
 		* num_particles = 10 (int): the number of particles to use per cell
+			A higher number gives better accuracy, but worse performance.
 		
 	Returns:
 		The redshift space box as a numpy array with same dimensions as dT.
+		
+	Example:
+		Read a density file, a velocity file and an xfrac file, calculate the 
+		brightness temperature, and convert it to redshift space.
+		
+		>>> vfile = c2t.VelocityFile('/path/to/data/8.515v_all.dat')
+		>>> dfile = c2t.DensityFile('/path/to/data/8.515n_all.dat')
+		>>> xfile = c2t.XfracFile('/path/to/data/xfrac3d_8.515.bin')
+		>>> dT = c2t.calc_dt(xfile, dfile)
+		>>> kms = vfile.get_kms_from_density(dfile)
+		>>> dT_zspace = get_distorted_dt(dT, dfile, dfile.z, los_axis = 0)
 	'''
 
 

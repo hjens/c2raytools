@@ -54,3 +54,17 @@ def calc_dt(xfrac, dens, z = -1):
 	print_msg('...done')
 
 	return dt
+
+#---------TEST-----------
+if __name__ == '__main__':
+	import c2raytools as c2t
+	
+	base_path = '/disk/sn-12/garrelt/Science/Simulations/Reionization/C2Ray_WMAP5/114Mpc_WMAP5' 
+	density_filename = base_path+'/coarser_densities/nc256_halos_removed/8.515n_all.dat'
+	xfrac_filename = base_path + '/114Mpc_f2_10S_256/results_ranger/xfrac3d_8.515.bin'
+
+	c2t.set_verbose(True)
+	xfile = c2t.XfracFile(xfrac_filename)
+	dfile = c2t.DensityFile(density_filename)
+	dT = c2t.calc_dt(xfile, dfile)
+	

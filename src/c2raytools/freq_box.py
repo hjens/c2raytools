@@ -7,55 +7,58 @@ from helper_functions import print_msg, get_dens_redshifts
 from xfrac_file import XfracFile
 from density_file import DensityFile
 
-def freq_axis(z_low, output_slices, box_length_slices=256, box_length_mpc = conv.LB):
+
+def freq_axis(z_low, z_high, box_length_slices=256, \
+			box_length_mpc = conv.LB):
 	''' 
 	Make a frequency axis vector with equal spacing in co-moving LOS coordinates. 
 	
 	Parameters:
-		* z_low (float): The lowest redshift
-		* output_slices (int): the number of slices in the output array
+		* z_low (float): The lower redshift
+		* z_high (float): The upper redhisft 
 		* box_length_slices = 256 (int): the number of slices in an input box
-		* box_length_mpc = conv.LB (float): the desired number of datapoints 
-			on the axis
+		* box_length_mpc = conv.LB (float): the size of the box in cMpc
 			 
 	Returns:
 		A tuple where the first element is a numpy array with the redshifts 
 		and the second elemet is a numpy array with the corresponding 21 cm line 
 		frequencies.
 		
-	TODO: 
-		Add option to input z_high
 	'''
+	assert(z_high > z_low)
 
 	z = z_low
-	z_array = np.zeros((output_slices,2))
+	z_array = []
+	nu_array = []
 
-	for nx in xrange(output_slices):
+	while z < z_high:
 		nu = const.nu0/(1.0+z)
 
-		z_array[nx,0] = z
-		z_array[nx,1] = nu
+		z_array.append(z)
+		nu_array.append(nu)
 
 		dnu = const.nu0*const.Hz(z)*box_length_mpc/(1.0 + z)**2/const.c/float(box_length_slices)
 
 		z = const.nu0/(nu - dnu) - 1.0
 
+	return np.array(z_array), np.array(nu_array) 
 
-	return z_array[:,0], z_array[:,1]
 
-
-def freq_box(xfrac_dir, dens_dir, z_low, cube_slices=100):
+def freq_box(xfrac_dir, dens_dir, z_low, z_high):
 	''' 
 	Make frequency (lightcone) boxes of density, ionized fractions, 
-	and brightness temperature. This routine is more or less a 
-	direct translation of Garrelts IDL routine. I have not tested it
-	much. Use at your own risk.
+	and brightness temperature. The function reads xfrac and density
+	files from the specified directories and combines them into a 
+	lighcone box going from z_low to z_high.
+	
+	This routine is more or less a direct translation of Garrelt's 
+	IDL routine.
 	
 	Parameters: 
 		* xfrac_dir (string): directory containing xfrac files
 		* dens_dir (string): directory containing density files
 		* z_low (float): lowest redshift to include
-		* cube_slices = 100 (int): number of slices to divide the cube into
+		* z_high (float): highest redshift to include.
 
 	Returns: 
 		Tuple with (density box, xfrac box, dt box, redshifts), where
@@ -63,25 +66,34 @@ def freq_box(xfrac_dir, dens_dir, z_low, cube_slices=100):
 		the lightcone quantities. redshifts is an array containing the 
 		redshift for each slice.
 		
-	TODO:
-		Test this routine. Make it more general. Check error messages.
+	Note:
+		Since this function relies on filenames to get redshifts,
+		all the data files must follow the common naming convenstions.
+		Ionization files must be named xfrac3d_z.bin and densityfiles
+		zn_all.dat
+		
+	Example:
+		Make a lightcone cube ranging from z = 7 to z = 8:
+	
+		>>> xfrac_dir = '/path/to/data/xfracs/'
+		>>> dens_dir = '/path/to/data/density/'
+		>>> xcube, dcube, dtcube, z = c2t.freq_box(xfrac_dir, density_dir, z_low=7.0, z_high=7.3)
+		
 	'''
-
+	
 
 	#Get the list of redshifts where we have simulation output files
 	dens_redshifts = get_dens_redshifts(dens_dir, z_low )
 
 	#Get the list of redhifts and frequencies that we want for the observational box
-	output_z, output_freq = freq_axis(z_low, cube_slices)
-	output_z = np.delete(output_z, np.where(output_z < dens_redshifts[0])[0])
-	output_z = np.delete(output_z, np.where(output_z > dens_redshifts[-1])[0])
+	output_z, output_freq = freq_axis(z_low, z_high)
+	output_z = output_z[output_z > dens_redshifts[0]]
+	output_z = output_z[output_z < dens_redshifts[-1]]
 
 	print_msg( 'Number of slices reduced to: %d' % len(output_z) )
 
 	#Keep track of output simulation files to use
-	xfrac_filename_high = None; xfrac_filename_low = None
 	xfrac_file_low = XfracFile(); xfrac_file_high = XfracFile()
-	dens_filename_high = None; dens_filename_low = None
 	dens_file_low = DensityFile(); dens_file_high = DensityFile()
 	z_bracket_low = None; z_bracket_high = None
 
@@ -139,7 +151,6 @@ def freq_box(xfrac_dir, dens_dir, z_low, cube_slices=100):
 		nx += 1
 
 	return xfrac_cube, dens_cube, dt_cube, output_z
-
 
 
 
