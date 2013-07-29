@@ -114,12 +114,8 @@ def read_binary_with_meshinfo(filename, bits=32, order='F'):
 		The data as a three dimensional numpy array.
 	'''
 
-	#import struct
-	#from scipy.io.numpyio import fread
-
 	assert(bits ==32 or bits==64)
 
-	#read_int = lambda f: struct.unpack('i', f.read(4))[0] #The format may be 'l' on some platforms
 	f = open(filename)
 
 	temp_mesh = np.fromfile(f,count=3,dtype='int32')
@@ -130,6 +126,31 @@ def read_binary_with_meshinfo(filename, bits=32, order='F'):
 	data = np.fromfile(f, dtype=datatype,count=mesh_x*mesh_y*mesh_z)
 	data = data.reshape((mesh_x, mesh_y, mesh_z), order=order)
 	return data.astype('float64')
+
+def read_raw_binary(filename, bits=64, order='C'):
+	''' Read a raw binary file with no mesh info. The mesh
+	is assumed to be cubic.
+	
+	Parameters:
+		* filename (string): the filename to read from
+		* bits = 64 (integer): the number of bits in the file
+		* order = 'C' (string): the ordering of the data. Can be 'C'
+			for C style ordering, or 'F' for fortran style.
+			
+	Returns:
+		The data as a three dimensional numpy array.
+	'''
+
+	assert(bits ==32 or bits==64)
+
+	f = open(filename)
+
+	datatype = (bits==32 and np.float32 or np.float64)
+	data = np.fromfile(f, dtype=datatype)
+	n = round(len(data)**(1./3.))
+	data = data.reshape((n, n, n), order=order)
+	return data.astype('float64')
+
 
 def save_binary_with_meshinfo(filename, data, bits=32, order='F'):
 	''' Save a binary file with three inital integers (a cbin file).
@@ -165,7 +186,7 @@ def read_fits(filename):
 	
 	import pyfits as pf
 	
-	return pf.open(filename)[0].data
+	return pf.open(filename)[0].data.astype('float64')
 
 def save_fits(data, filename):
 	'''
@@ -184,7 +205,7 @@ def save_fits(data, filename):
 	
 	save_data, datatype = get_data_and_type(data)
 	
-	hdu = pf.PrimaryHDU(save_data)
+	hdu = pf.PrimaryHDU(save_data.astype('float64'))
 	hdulist = pf.HDUList([hdu])
 	hdulist.writeto(filename, clobber=True)
 

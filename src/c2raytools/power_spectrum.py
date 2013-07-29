@@ -197,7 +197,8 @@ def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dim
 
 	return radial_average(input_array, kbins=kbins, box_dims = box_dims)
 
-def power_spectrum_mu(input_array, los_axis = 0, mubins=20, kbins=10, box_dims = None, weights=None):
+def power_spectrum_mu(input_array, los_axis = 0, mubins=20, kbins=10, box_dims = None, weights=None,
+					exclude_zero_modes = True):
 	'''
 	Calculate the power spectrum and bin it in mu=cos(theta) and k
 	input_array is the array to calculate the power spectrum from
@@ -214,6 +215,8 @@ def power_spectrum_mu(input_array, los_axis = 0, mubins=20, kbins=10, box_dims =
 			dimensions. If it is a float, this is taken as the box length
 			along all dimensions. If it is an array-like, the elements are
 			taken as the box length along each axis.
+		* exlude_zero_modes = True (bool): if true, modes with any components
+			of k equal to zero will be excluded.
 			
 	Returns: 
 		A tuple with (Pk, mubins, kbins), where Pk is an array with the 
@@ -228,9 +231,10 @@ def power_spectrum_mu(input_array, los_axis = 0, mubins=20, kbins=10, box_dims =
 	#Calculate the power spectrum
 	powerspectrum = power_spectrum_nd(input_array, box_dims=box_dims)	
 
-	return mu_binning(powerspectrum, los_axis, mubins, kbins, box_dims, weights)
+	return mu_binning(powerspectrum, los_axis, mubins, kbins, box_dims, weights, exclude_zero_modes)
 
-def cross_power_spectrum_mu(input_array1, input_array2, los_axis = 0, mubins=20, kbins=10, box_dims = None, weights=None):
+def cross_power_spectrum_mu(input_array1, input_array2, los_axis = 0, mubins=20, kbins=10, 
+						box_dims = None, weights=None, exclude_zero_modes = True):
 	'''
 	Calculate the cross power spectrum and bin it in mu=cos(theta) and k
 	input_array is the array to calculate the power spectrum from
@@ -248,12 +252,17 @@ def cross_power_spectrum_mu(input_array1, input_array2, los_axis = 0, mubins=20,
 			dimensions. If it is a float, this is taken as the box length
 			along all dimensions. If it is an array-like, the elements are
 			taken as the box length along each axis.
+		* exlude_zero_modes = True (bool): if true, modes with any components
+			of k equal to zero will be excluded.
 		
 	Returns: 
 		A tuple with (Pk, mubins, kbins), where Pk is an array with the 
 		cross power spectrum of dimensions (n_mubins x n_kbins), 
 		mubins is an array with the mu bin centers and
 		kbins is an array with the k bin centers.
+		
+	TODO:
+		Add support for (non-numpy) lists for the bins
 	'''
 
 	box_dims = get_dims(box_dims, input_array1.shape)
@@ -261,10 +270,11 @@ def cross_power_spectrum_mu(input_array1, input_array2, los_axis = 0, mubins=20,
 	#Calculate the power spectrum
 	powerspectrum = cross_power_spectrum_nd(input_array1, input_array2, box_dims=box_dims)	
 	
-	return mu_binning(powerspectrum, los_axis, mubins, kbins, box_dims, weights)
+	return mu_binning(powerspectrum, los_axis, mubins, kbins, box_dims, weights, exclude_zero_modes)
 
 
-def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None, weights=None):
+def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None, weights=None,
+			exclude_zero_modes = True):
 	#This function is for internal use only.
 	
 	if weights != None:
@@ -301,9 +311,9 @@ def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None
 	n_kbins = len(kbins)-1
 
 	#Exclude the k_x = 0, k_y = 0, k_z = 0 modes
-	zero_ind = (x == k.shape[0]/2) + (y == k.shape[1]/2) + (z == k.shape[2]/2)
-	powerspectrum[zero_ind] = 0.
-	#k[zero_ind] = -1.
+	if exclude_zero_modes:
+		zero_ind = (x == k.shape[0]/2) + (y == k.shape[1]/2) + (z == k.shape[2]/2)
+		powerspectrum[zero_ind] = 0.
 
 	#Make mu bins
 	if isinstance(mubins,int):

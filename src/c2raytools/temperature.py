@@ -29,7 +29,7 @@ def calc_dt(xfrac, dens, z = -1):
 		if z < 0:
 			print 'Warning. Please supply a redshift for calc_dt'
 	else:
-		xi = xi.astype('float64')
+		xi = xfrac.astype('float64')
 
 	if isinstance(dens, DensityFile):
 		rho = dens.raw_density.astype('float64')

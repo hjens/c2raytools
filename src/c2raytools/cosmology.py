@@ -125,7 +125,8 @@ def cdist(z):
 
 
 def cdist_to_z(dist):
-	''' Calculate the redshift correspoding to the given redshift. 
+	''' Calculate the comoving distance correspoding to the given 
+	redshift. 
 
 	Parameters:
 		* dist (float): the distance in comoving Mpc

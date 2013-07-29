@@ -34,9 +34,21 @@ All updates to :mod:`c2raytools` are published on GitHub. To update your install
 
 Then run the :mod:`setup.py` scipt again, in the same way as before. If you deleted the downloaded files, you can update by simply repeating the installation procedure as described above.
 
+Notes for users of older versions
+---------------------------------
+:mod:`c2raytools` used to be organized into several smaller sub-packages (all the file classes where in the :mod:`files` module, for instance). This is no longer the case. Most older code can be converted simply by removing the extra module name. For example, change:
+
+>>> myfile = c2t.files.XfracFile(filename)
+
+to
+
+>>> myfile = c2t.XfracFile(filename)
+
+
+
 Dependencies
 ------------
-:mod:`c2raytools` requires :mod:`numpy` and :mod:`scipy` to work. To visualize data, :mod:`matplotlib` is recommended.
+:mod:`c2raytools` requires :mod:`numpy` and :mod:`scipy` to work. To visualize data, :mod:`matplotlib` is needed. The FITS reading/saving routines require :mod:`pyfits`
 
 .. _documentation:
 
