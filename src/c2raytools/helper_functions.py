@@ -267,6 +267,26 @@ def get_data_and_type(indata):
 	elif isinstance(indata, np.ndarray):
 		return indata, 'unknown'
 	raise Exception('Could not determine type of data')
+
+def outputify(output):
+	'''
+	If given a list with only one element, return the element
+	If given a standard python list or tuple, make it into
+	a numpy array.
+	
+	Parameters:
+		output (any scalar or list-like): the output to process
+		
+	Returns:
+		The output in the correct format.
+	'''
+	
+	if hasattr(output, '__iter__'): #List-like
+		if len(output) == 1:
+			return output[0]
+		elif not type(output) == np.ndarray:
+			return np.array(output)
+	return output
 		
 
 verbose = False

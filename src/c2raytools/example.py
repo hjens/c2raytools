@@ -48,7 +48,8 @@ dT = c2t.calc_dt(xfile, dfile)
 dT_slice = dT[128,:,:]
 
 #Convolve with a Gaussian beam, assuming a 2 km maximum baseline
-dT_slice_conv = c2t.beam_convolve(dT_slice, xfile.z, c2t.boxsize, max_baseline=2000.) 
+dT_slice_conv = c2t.beam_convolve(dT_slice, xfile.z, c2t.boxsize, \
+                                  max_baseline=2000.) 
 
 #Plot some stuff
 pl.figure()

@@ -5,7 +5,8 @@ from scipy import signal
 from helper_functions import print_msg
 from misc import gauss_kern
 
-def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, beamshape='gaussian'):
+def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, \
+				beamshape='gaussian'):
 	''' 
 	Convolve input_array with a beam of the specified form.
 	The beam can be specified either by a width in arcminutes,

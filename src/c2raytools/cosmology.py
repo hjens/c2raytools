@@ -3,6 +3,7 @@ import const
 import numpy as np
 from scipy.integrate import quadrature
 from scipy.interpolate import interp1d
+from helper_functions import outputify
 
 #Precalculated table of comoving distances at various redshifts
 precalc_table_z = 10**np.linspace(0,2,200)
@@ -58,145 +59,171 @@ precalc_table_cdist = np.array([  3367.12811226,   3425.76323848,   3484.9819894
         13083.39514428,  13102.73405492,  13121.8573761 ,  13140.76734823])
 
 def ldist(z):
-	# This function is used for the integration in lumdist  
-	# Only meant for internal use.
-	term1 = (1+z)**2
-	term2 =  1.+2.*(const.q0+const.lam)*z
-	term3 = z*(2.+z)*const.lam
-	denom = (term1*term2 - term3)
-	if type(z) is np.ndarray:
-		out = np.zeros(z.shape)
-		good = np.where(denom > 0.0)[0]
-		out[good] = 1.0/np.sqrt(denom[good])
-		return out
-	else:
-		if denom >= 0:
-			return 1.0/np.sqrt(denom)
-		else:
-			return 0.0
+    # This function is used for the integration in lumdist  
+    # Only meant for internal use.
+    term1 = (1+z)**2
+    term2 =  1.+2.*(const.q0+const.lam)*z
+    term3 = z*(2.+z)*const.lam
+    denom = (term1*term2 - term3)
+    if type(z) is np.ndarray:
+        out = np.zeros(z.shape)
+        good = np.where(denom > 0.0)[0]
+        out[good] = 1.0/np.sqrt(denom[good])
+        return out
+    else:
+        if denom >= 0:
+            return 1.0/np.sqrt(denom)
+        else:
+            return 0.0
 
 
 def lumdist(z, k=0):
-	''' Calculate the luminosity distance for a given redshift.
-	
-	Parameters:
-		* z (float or array): the redshift(s)
-		* k = 0 (float): the curvature constant.
-		
-	Returns:
-		The luminosity distance in Mpc
-	 '''
+    ''' Calculate the luminosity distance for a given redshift.
+    
+    Parameters:
+        * z (float or array): the redshift(s)
+        * k = 0 (float): the curvature constant.
+        
+    Returns:
+        The luminosity distance in Mpc
+     '''
 
-	if not (type(z) is np.ndarray): #Allow for passing a single z
-		z = np.array([z])
-	n = len(z)
+    if not (type(z) is np.ndarray): #Allow for passing a single z
+        z = np.array([z])
+    n = len(z)
 
-	if const.lam == 0:
-		denom = np.sqrt(1+2*const.q0*z) + 1 + const.q0*z 
-		dlum = (const.c*z/const.H0)*(1 + z*(1-const.q0)/denom)
-		return dlum
-	else:
-		dlum = np.zeros(n)
-		for i in xrange(n):
-			if z[i] <= 0:
-				dlum[i] = 0.0
-			else:
-				dlum[i] = quadrature(ldist, 0, z[i])[0]
+    if const.lam == 0:
+        denom = np.sqrt(1+2*const.q0*z) + 1 + const.q0*z 
+        dlum = (const.c*z/const.H0)*(1 + z*(1-const.q0)/denom)
+        return dlum
+    else:
+        dlum = np.zeros(n)
+        for i in xrange(n):
+            if z[i] <= 0:
+                dlum[i] = 0.0
+            else:
+                dlum[i] = quadrature(ldist, 0, z[i])[0]
 
-	if k > 0:
-		dlum = np.sinh(np.sqrt(k)*dlum)/np.sqrt(k)
-	elif k < 0:
-		dlum = np.sin(np.sqrt(-k)*dlum)/np.sqrt(-k)
-	return const.c*(1+z)*dlum/const.H0
+    if k > 0:
+        dlum = np.sinh(np.sqrt(k)*dlum)/np.sqrt(k)
+    elif k < 0:
+        dlum = np.sin(np.sqrt(-k)*dlum)/np.sqrt(-k)
+    return outputify(const.c*(1+z)*dlum/const.H0)
 
 
 def cdist(z):
-	''' Calculate the comoving distance 
+    ''' Calculate the comoving distance 
 
-	Parameters:
-		z (float): redshift
+    Parameters:
+        z (float): redshift
 
-	Returns:
-		Comoving distance in Mpc
-	'''
-	Ez_func = lambda x: 1./np.sqrt(const.Omega0*(1.+x)**3+const.lam)
-	dist = const.c/const.H0 * quadrature(Ez_func, 0, z)[0]
-	return dist
+    Returns:
+        Comoving distance in Mpc
+    '''
+    Ez_func = lambda x: 1./np.sqrt(const.Omega0*(1.+x)**3+const.lam)
+    dist = const.c/const.H0 * quadrature(Ez_func, 0, z)[0]
+    return outputify(dist)
 
 
 def cdist_to_z(dist):
-	''' Calculate the comoving distance correspoding to the given 
-	redshift. 
+    ''' Calculate the redshift correspoding to the given redshift. 
 
-	Parameters:
-		* dist (float): the distance in comoving Mpc
+    Parameters:
+        * dist (float): the distance in comoving Mpc
 
-	Returns:
-		redshift corresponding to the distance.
+    Returns:
+        redshift corresponding to the distance.
 
-		.. note::
-			Uses a precalculated table for interpolation. Only valid for 
-			0 < z < 100 
-		
-	'''
+        .. note::
+            Uses a precalculated table for interpolation. Only valid for 
+            0 < z < 100 
+        
+    '''
 
-	func = interp1d(precalc_table_cdist, precalc_table_z, kind='cubic')
-	z = func(dist)
-	return z
+    func = interp1d(precalc_table_cdist, precalc_table_z, kind='cubic')
+    z = func(dist)
+    return z
 
 
 def zang(dl, z):
-	''' Calculate the angular size of an object at a given
-	redshift.
-	
-	Parameters:
-		* dl (float or array): the physical size in kpc
-		* z (float or array): the redshift of the object
-		
-	Returns:
-		The angluar size in arcseconds 
-		
-	'''
+    ''' Calculate the angular size of an object at a given
+    redshift.
+    
+    Parameters:
+        * dl (float or array): the physical size in kpc
+        * z (float or array): the redshift of the object
+        
+    Returns:
+        The angluar size in arcseconds 
+        
+    '''
 
-	angle = 180./(3.1415)*3600.*dl*(1+z)**2/(1000*lumdist(z))
-	if len(angle) == 1:
-		return angle[0]
-	return angle
+    angle = 180./(3.1415)*3600.*dl*(1+z)**2/(1000*lumdist(z))
+    return outputify(angle)
 
 
 def nu_to_z(nu21):
-	''' Convert 21 cm frequency in MHz to redshift 
+    ''' Convert 21 cm frequency in MHz to redshift 
 
-	Parameters:
-		* nu21 (float or array): redshifted 21 cm frequency in MHz
+    Parameters:
+        * nu21 (float or array): redshifted 21 cm frequency in MHz
 
-	Returns:
-		Redshift
-		
-	'''
-	return const.nu0/nu21-1
+    Returns:
+        Redshift
+        
+    '''
+    return const.nu0/nu21-1
 
 def z_to_nu(z):
-	''' Get the 21 cm frequency that corresponds to redshift z 
+    ''' Get the 21 cm frequency that corresponds to redshift z 
 
-	Parameters:
-		* z (float or array): redshift
+    Parameters:
+        * z (float or array): redshift
 
-	Returns:
-		redshifted 21 cm frequency in MHz
-		
-	'''
-	return const.nu0/(1.+z)
+    Returns:
+        redshifted 21 cm frequency in MHz
+        
+    '''
+    return const.nu0/(1.+z)
 
 def nu_to_cdist(nu21):
-	''' Calculate the comoving distance to a given 21 cm frequency 
+    ''' Calculate the comoving distance to a given 21 cm frequency 
 
-	Parameters:
-		* nu21 (float or array): redshifted 21 cm frequency in MHz
+    Parameters:
+        * nu21 (float or array): redshifted 21 cm frequency in MHz
 
-	Returns:
-		Comoving distance in Mpc
-	
-	'''
-	redsh = nu_to_z(nu21)
-	return cdist(redsh)
+    Returns:
+        Comoving distance in Mpc
+    
+    '''
+    redsh = nu_to_z(nu21)
+    return cdist(redsh)
+    
+def ctop(cdist, z):
+    '''
+    Convert comoving distance to proper distance
+    
+    Parameters:
+        * cdist: The comoving distance
+        * z: the redshift
+        
+    Returns:
+        Proper distance
+    '''
+    return cdist/(1+z)
+
+
+def ptoc(pdist, z):
+    '''
+    Convert proper distance to comoving distance
+    
+    Parameters:
+        * pdist: The proper distance
+        * z: the redshift
+        
+    Returns:
+        Comoving distance
+    '''
+    
+    return pdist*(1+z)
+
