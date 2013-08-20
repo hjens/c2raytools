@@ -1,4 +1,5 @@
 import numpy as np
+import const
 
 def gauss_kern(size, sizey = None, sigma=1.0):
 	''' 
@@ -54,3 +55,22 @@ def smooth(input_array, sigma):
 
 	return out[ox*0.25:ox*0.75, ox*0.25:ox*0.75]
 
+def get_beam_w(baseline, z):
+	'''
+	Calculate the width of the beam for an
+	interferometer with a given maximum baseline.
+	It is assumed that observations are done at
+	lambda = 21*(1+z) cm
+	
+	Parameters:
+		* baseline (float): the maximum baseline in meters
+		* z (float): the redshift
+		
+	Returns:
+		The beam width in arcminutes
+	'''
+	
+	fr = const.nu0 / (1.0+z) 
+	lw = const.c/fr/1.e6*1.e3 # wavelength in m
+	beam_w = lw/baseline/np.pi*180.*60.
+	return beam_w

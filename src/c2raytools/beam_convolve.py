@@ -3,7 +3,7 @@ import const
 from cosmology import zang
 from scipy import signal
 from helper_functions import print_msg
-from misc import gauss_kern
+from misc import gauss_kern, get_beam_w
 
 def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, \
 				beamshape='gaussian'):
@@ -31,9 +31,7 @@ def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, \
 	if (not beam_w) and (not max_baseline):
 		raise Exception('Please specify either a beam width or a maximum baseline')
 	elif not beam_w: #Calculate beam width from max baseline
-		fr = const.nu0 / (1.0+z) 
-		lw = const.c/fr/1.e6*1.e3 # wavelength in m
-		beam_w = lw/max_baseline/np.pi*180.*60.
+		beam_w = get_beam_w(max_baseline, z)
 
 	angle = zang(fov_mpc*1000./(1.0 + z), z)/60.
 	mx = input_array.shape[0]
