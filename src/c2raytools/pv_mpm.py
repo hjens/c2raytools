@@ -1,8 +1,9 @@
 import numpy as np
 import const
 import conv
-from helper_functions import print_msg, get_interpolated_array
-
+from helper_functions import print_msg, get_interpolated_array, read_binary_with_meshinfo
+import vel_file
+import density_file
 
 def get_distorted_dt(dT, kms, redsh, los_axis=0, num_particles=10):
 	''' 
@@ -101,4 +102,29 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, num_particles=10):
 	print_msg('New (mean,var): %.3f, %.3f' % (distbox.mean(), distbox.var()) )
 	return distbox
 
+
+def make_pv_box(dT_filename, vel_filename, dens_filename, z, los = 0, num_particles=10):
+	'''
+	Convenience method to read files and make a distorted box.
+	
+	Parameters:
+		* dT_filename (string): the name of the dT file
+		* vel_filename (string): the name of the velocity file
+		* dens_filename (string): the name of the density file
+		* z (float): the redshift
+		* los (integer): the line-of-sight axis
+		* num_particles (integer): the number of particels to pass
+			to get_distorted_dt
+		
+	Returns:
+		The redshift space box
+	'''
+
+	dT = read_binary_with_meshinfo(dT_filename, bits=32, order='c')
+	vfile = vel_file.VelocityFile(vel_filename)
+	dfile = density_file.DensityFile(dens_filename)
+	kms = vfile.get_kms_from_density(dfile)
+	dT_pv = get_distorted_dt(dT, kms, redsh = z, los_axis = los, \
+							num_particles = num_particles)
+	return dT_pv
 

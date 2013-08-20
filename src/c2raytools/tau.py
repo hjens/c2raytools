@@ -31,7 +31,7 @@ def tau(ionfractions, redshifts, num_points = 50):
 		
 		>>> z_reion = 11.
 		>>> redshifts = np.linspace(z_reion, 1100., 50)
-		>>> ionfractions = np.zeros(len(redshifts))
+		>>> ionfracs = np.zeros(len(redshifts))
 		>>> tau0, tau_z = tau(ionfracs, redshifts)
 		>>> print 'Total tau: ', tau0[-1]
 		0.0884755058758
