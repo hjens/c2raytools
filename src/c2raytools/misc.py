@@ -51,6 +51,8 @@ def smooth(input_array, sigma):
 	
 	out =  signal.fftconvolve(input_array, kernel)
 
+	#fftconvolve makes the array larger - return only
+	#the central part
 	ox = out.shape[0]
 
 	return out[ox*0.25:ox*0.75, ox*0.25:ox*0.75]
@@ -70,7 +72,7 @@ def get_beam_w(baseline, z):
 		The beam width in arcminutes
 	'''
 	
-	fr = const.nu0 / (1.0+z) 
+	fr = const.nu0 / (1.0+z) #21 cm frequency at z
 	lw = const.c/fr/1.e6*1.e3 # wavelength in m
 	beam_w = lw/baseline/np.pi*180.*60.
 	return beam_w

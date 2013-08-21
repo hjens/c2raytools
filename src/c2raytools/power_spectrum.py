@@ -133,13 +133,11 @@ def radial_average(input_array, box_dims, kbins=10):
 	print_msg('Binning data...')
 	nbins = len(kbins)-1
 	dk = (kbins[1:]-kbins[:-1])/2.
-	outdata = np.zeros(nbins)
-	for ki in range(nbins):
-		kmin = kbins[ki]
-		kmax = kbins[ki+1]
-		idx = (k >= kmin) * (k < kmax)
-		outdata[ki] = np.mean(input_array[idx])
-
+	outdata = np.histogram(k.flatten(), bins=kbins,
+						weights = input_array.flatten())[0]
+	n = np.histogram(k.flatten(), bins=kbins)[0].astype('float')
+	outdata /= n
+	
 	return outdata, kbins[:-1]+dk
 
 	
@@ -341,6 +339,7 @@ def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None
 				outdata[i,ki] /= weights[idx].mean()
 
 	return outdata, mubins[:-1]+dmu, kbins[:-1]+dk
+
 
 
 #For internal use only
