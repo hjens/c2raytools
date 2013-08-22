@@ -17,3 +17,7 @@ from helper_functions import *
 from cosmology import *
 from plotting import *
 from power_legendre import *
+
+#Suppress warnings from zero-divisions and nans
+import numpy
+numpy.seterr(all='ignore')

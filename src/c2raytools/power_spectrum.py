@@ -28,7 +28,7 @@ def power_spectrum_nd(input_array, box_dims = None):
 		Also return k values.
 	'''
 
-	box_dims = get_dims(box_dims, input_array.shape)
+	box_dims = _get_dims(box_dims, input_array.shape)
 
 	print_msg( 'Calculating power spectrum...')
 	ft = fftpack.fftshift(fftpack.fftn(input_array.astype('float64')))
@@ -69,7 +69,7 @@ def cross_power_spectrum_nd(input_array1, input_array2, box_dims):
 
 	assert(input_array1.shape == input_array2.shape)
 
-	box_dims = get_dims(box_dims, input_array1.shape)
+	box_dims = _get_dims(box_dims, input_array1.shape)
 
 	print_msg( 'Calculating power spectrum...')
 	ft1 = fftpack.fftshift(fftpack.fftn(input_array1.astype('float64')))
@@ -107,39 +107,21 @@ def radial_average(input_array, box_dims, kbins=10):
 
 	'''
 
-	dim = len(input_array.shape)
-	if dim == 2:
-		x,y = np.indices(input_array.shape)
-		center = np.array([(x.max()-x.min())/2.0, (y.max()-y.min())/2.0])
-		kx = 2.*np.pi * (x-center[0])/box_dims[0]
-		ky = 2.*np.pi * (y-center[1])/box_dims[1]
-		k = np.sqrt(kx**2 + ky**2)
-	elif dim == 3:
-		x,y,z = np.indices(input_array.shape)
-		center = np.array([(x.max()-x.min())/2.0, (y.max()-y.min())/2.0, (z.max()-z.min())/2.0])
-		kx = 2.*np.pi * (x-center[0])/box_dims[0]
-		ky = 2.*np.pi * (y-center[1])/box_dims[1]
-		kz = 2.*np.pi * (z-center[2])/box_dims[2]
-		k = np.sqrt(kx**2 + ky**2 + kz**2 ) 
-	else:
-		raise Exception('Check your dimensions!')
+	k_comp, k = _get_k(input_array, box_dims)
 
-	if isinstance(kbins,int):
-		kmin = 2.*np.pi/min(box_dims)
-		kbins = 10**np.linspace(np.log10(kmin), np.log10(k.max()), kbins+1)
-
+	kbins = _get_kbins(kbins, box_dims, k)
 	
 	#Bin the data
 	print_msg('Binning data...')
-	nbins = len(kbins)-1
 	dk = (kbins[1:]-kbins[:-1])/2.
+	#Total power in each bin
 	outdata = np.histogram(k.flatten(), bins=kbins,
 						weights = input_array.flatten())[0]
+	#Number of modes in each bin
 	n = np.histogram(k.flatten(), bins=kbins)[0].astype('float')
 	outdata /= n
 	
 	return outdata, kbins[:-1]+dk
-
 	
 
 def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None):
@@ -162,7 +144,7 @@ def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None):
 		power spectrum and bins is an array with the k bin centers.
 	'''
 
-	box_dims = get_dims(box_dims, input_array_nd.shape)
+	box_dims = _get_dims(box_dims, input_array_nd.shape)
 
 	input_array = power_spectrum_nd(input_array_nd, box_dims=box_dims)	
 
@@ -189,7 +171,7 @@ def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dim
 		cross power spectrum and bins is an array with the k bin centers.
 	'''
 
-	box_dims = get_dims(box_dims, input_array1_nd.shape)
+	box_dims = _get_dims(box_dims, input_array1_nd.shape)
 
 	input_array = cross_power_spectrum_nd(input_array1_nd, input_array2_nd, box_dims=box_dims)	
 
@@ -224,7 +206,7 @@ def power_spectrum_mu(input_array, los_axis = 0, mubins=20, kbins=10, box_dims =
 	
 	'''
 
-	box_dims = get_dims(box_dims, input_array.shape)
+	box_dims = _get_dims(box_dims, input_array.shape)
 
 	#Calculate the power spectrum
 	powerspectrum = power_spectrum_nd(input_array, box_dims=box_dims)	
@@ -263,7 +245,7 @@ def cross_power_spectrum_mu(input_array1, input_array2, los_axis = 0, mubins=20,
 		Add support for (non-numpy) lists for the bins
 	'''
 
-	box_dims = get_dims(box_dims, input_array1.shape)
+	box_dims = _get_dims(box_dims, input_array1.shape)
 	
 	#Calculate the power spectrum
 	powerspectrum = cross_power_spectrum_nd(input_array1, input_array2, box_dims=box_dims)	
@@ -278,38 +260,21 @@ def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None
 	if weights != None:
 		powerspectrum *= weights
 
-	dim = len(powerspectrum.shape)
-	assert(dim==3)
+	assert(len(powerspectrum.shape)==3)
 
-	x,y,z = np.indices(powerspectrum.shape)
-	center = np.array([(x.max()-x.min())/2.0, (y.max()-y.min())/2.0, (z.max()-z.min())/2.0])
-	kx = 2.*np.pi * (x-center[0])/box_dims[0]
-	ky = 2.*np.pi * (y-center[1])/box_dims[1]
-	kz = 2.*np.pi * (z-center[2])/box_dims[2]
-	k = np.sqrt(kx**2 + ky**2 + kz**2 ) 
+	k_comp, k = _get_k(powerspectrum, box_dims)
 
-	#Line-of-sight distance from center 
-	if los_axis == 0:
-		los_dist = kx
-	elif los_axis == 1:
-		los_dist = ky
-	elif los_axis == 2:
-		los_dist = kz
-	else:
-		raise Exception('Your space is not %d-dimensional!' % los_axis)
+	mu = _get_mu(k_comp, k, los_axis)
 
-	#mu=cos(theta) = k_par/k
-	mu = los_dist/np.abs(k)
-	mu[np.where(k < 0.001)] = np.nan
+	#Calculate k values, and make k bins
+	kbins = _get_kbins(kbins, box_dims, k)
 
-	#Calculate k values, and make bins
-	if isinstance(kbins,int):
-		kbins = 10**np.linspace(np.log10(k.min()),np.log10(k.max()),kbins+1)
 	dk = (kbins[1:]-kbins[:-1])/2.
 	n_kbins = len(kbins)-1
 
 	#Exclude the k_x = 0, k_y = 0, k_z = 0 modes
 	if exclude_zero_modes:
+		x,y,z = np.indices(powerspectrum.shape)
 		zero_ind = (x == k.shape[0]/2) + (y == k.shape[1]/2) + (z == k.shape[2]/2)
 		powerspectrum[zero_ind] = 0.
 
@@ -340,10 +305,73 @@ def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None
 
 	return outdata, mubins[:-1]+dmu, kbins[:-1]+dk
 
+#Some methods for internal use
+
+def _get_k(input_array, box_dims):
+	'''
+	Get the k values for input array with given dimensions.
+	Return k components and magnitudes.
+	For internal use.
+	'''
+	dim = len(input_array.shape)
+	if dim == 2:
+		x,y = np.indices(input_array.shape)
+		center = np.array([(x.max()-x.min())/2, (y.max()-y.min())/2])
+		kx = 2.*np.pi * (x-center[0])/box_dims[0]
+		ky = 2.*np.pi * (y-center[1])/box_dims[1]
+		k = np.sqrt(kx**2 + ky**2)
+		return [kx, ky], k
+	elif dim == 3:
+		x,y,z = np.indices(input_array.shape)
+		center = np.array([(x.max()-x.min())/2, (y.max()-y.min())/2, \
+						(z.max()-z.min())/2])
+		kx = 2.*np.pi * (x-center[0])/box_dims[0]
+		ky = 2.*np.pi * (y-center[1])/box_dims[1]
+		kz = 2.*np.pi * (z-center[2])/box_dims[2]
+		k = np.sqrt(kx**2 + ky**2 + kz**2 ) 
+		return [kx,ky,kz], k
 
 
-#For internal use only
-def get_dims(box_dims, ashape):
+def _get_mu(k_comp, k, los_axis):
+	'''
+	Get the mu values for given k values and 
+	a line-of-sight axis.
+	For internal use
+	'''
+	#Line-of-sight distance from center 
+	if los_axis == 0:
+		los_dist = k_comp[0]
+	elif los_axis == 1:
+		los_dist = k_comp[1]
+	elif los_axis == 2:
+		los_dist = k_comp[2]
+	else:
+		raise Exception('Your space is not %d-dimensional!' % los_axis)
+
+	#mu=cos(theta) = k_par/k
+	mu = los_dist/np.abs(k)
+	mu[np.where(k < 0.001)] = np.nan
+	
+	return mu
+
+def _get_kbins(kbins, box_dims, k):
+	'''
+	Make a list of bin edges if kbins is an integer,
+	otherwise return it as it is.
+	'''
+	if isinstance(kbins,int):
+		kmin = 2.*np.pi/min(box_dims)
+		kbins = 10**np.linspace(np.log10(kmin), np.log10(k.max()), kbins+1)
+	return kbins
+
+def _get_dims(box_dims, ashape):
+	'''
+	If box dims is a scalar, assume that dimensions
+	are cubic and make a list
+	If it's not given, assume it's the default value of the box
+	size
+	Otherwise, return as it is
+	'''
 	if box_dims == None:
 		return [conv.LB]*len(ashape)
 	if not hasattr(box_dims, '__iter__'):
