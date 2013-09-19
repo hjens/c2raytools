@@ -1,5 +1,6 @@
 #Import sub-modules 
 import conv
+from conv import set_sim_constants
 from const import *
 from beam_convolve import *
 from density_file import *

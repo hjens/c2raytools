@@ -1,5 +1,5 @@
-from const import *
-from conv import *
+import const
+import conv
 import numpy as np
 
 def tau(ionfractions, redshifts, num_points = 50):
@@ -43,8 +43,8 @@ def tau(ionfractions, redshifts, num_points = 50):
 		raise Exception()
 	
 	sigma_T = 6.65e-25
-	chi1 = 1.0+abu_he
-	coeff = 2.0*(c*1e5)*sigma_T*const.OmegaB/const.Omega0*const.rho_crit_0*\
+	chi1 = 1.0+const.abu_he
+	coeff = 2.0*(const.c*1e5)*sigma_T*const.OmegaB/const.Omega0*const.rho_crit_0*\
 		chi1/const.mean_molecular/const.m_p/(3.*const.H0cgs)
 
 	tau_z = np.hstack((np.arange(1,num_points+1)/float(num_points)*redshifts[0], redshifts))
