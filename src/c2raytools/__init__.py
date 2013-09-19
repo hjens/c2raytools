@@ -1,5 +1,5 @@
 #Import sub-modules 
-from conv import *
+import conv
 from const import *
 from beam_convolve import *
 from density_file import *

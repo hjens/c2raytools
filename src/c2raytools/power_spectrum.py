@@ -328,8 +328,18 @@ def _get_k(input_array, box_dims):
 		kx = 2.*np.pi * (x-center[0])/box_dims[0]
 		ky = 2.*np.pi * (y-center[1])/box_dims[1]
 		kz = 2.*np.pi * (z-center[2])/box_dims[2]
-		k = np.sqrt(kx**2 + ky**2 + kz**2 ) 
+		k = np.sqrt(kx**2 + ky**2 + kz**2 ) 		
 		return [kx,ky,kz], k
+	
+#	center = np.array([(s-1)/2 for s in input_array.shape])
+#	print center
+#	inds = np.indices(input_array.shape)
+#
+#	k_comp = [(inds[i,:,:,:]-center[i])/box_dims[i] for i in range(dim)]
+#	k_comp = 2.*np.pi * np.array(k_comp)
+#	k = np.sqrt(np.sum(k_comp**2))
+#	return k_comp, k
+
 
 
 def _get_mu(k_comp, k, los_axis):

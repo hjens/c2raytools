@@ -30,7 +30,6 @@ def set_sim_constants(boxsize_cMpc):
 	'''
 	global boxsize, LB, nbox_fine, M_box, M_grid, lscale, tscale, velconvert
 
-	#hf.print_msg('Setting constants for boxsize=%.3f cMpc' % boxsize_cMpc)
 	boxsize = boxsize_cMpc
 	LB = boxsize/const.h	
 	if hf.flt_comp(boxsize, 425.):

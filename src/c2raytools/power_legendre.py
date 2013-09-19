@@ -29,6 +29,8 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
         All four arrays have the same length
     '''
     
+    assert(los_axis >= 0 and los_axis <= len(input_array.shape))
+    
     #First calculate the power spectrum
     box_dims = _get_dims(box_dims, input_array.shape)
     ps = power_spectrum_nd(input_array, box_dims)
