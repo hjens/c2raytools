@@ -1,5 +1,5 @@
 import numpy as np
-from cosmology import zang
+from cosmology import angular_size
 from scipy import signal
 from helper_functions import print_msg
 from misc import gauss_kern, get_beam_w
@@ -32,7 +32,7 @@ def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, \
 	elif not beam_w: #Calculate beam width from max baseline
 		beam_w = get_beam_w(max_baseline, z)
 
-	angle = zang(fov_mpc*1000./(1.0 + z), z)/60.
+	angle = angular_size(fov_mpc*1000./(1.0 + z), z)/60.
 	mx = input_array.shape[0]
 
 	print_msg('Field of view is %.2f arcminutes' % (angle) )

@@ -58,8 +58,8 @@ precalc_table_cdist = np.array([  3367.12811226,   3425.76323848,   3484.9819894
         13003.83791968,  13024.06206321,  13044.06144437,  13063.83836398,
         13083.39514428,  13102.73405492,  13121.8573761 ,  13140.76734823])
 
-def ldist(z):
-    # This function is used for the integration in lumdist  
+def _ldist(z):
+    # This function is used for the integration in luminosity_distance  
     # Only meant for internal use.
     term1 = (1+z)**2
     term2 =  1.+2.*(const.q0+const.lam)*z
@@ -77,7 +77,7 @@ def ldist(z):
             return 0.0
 
 
-def lumdist(z, k=0):
+def luminosity_distance(z, k=0):
     ''' Calculate the luminosity distance for a given redshift.
     
     Parameters:
@@ -102,7 +102,7 @@ def lumdist(z, k=0):
             if z[i] <= 0:
                 dlum[i] = 0.0
             else:
-                dlum[i] = quadrature(ldist, 0, z[i])[0]
+                dlum[i] = quadrature(_ldist, 0, z[i])[0]
 
     if k > 0:
         dlum = np.sinh(np.sqrt(k)*dlum)/np.sqrt(k)
@@ -111,7 +111,7 @@ def lumdist(z, k=0):
     return outputify(const.c*(1+z)*dlum/const.H0)
 
 
-def cdist(z):
+def z_to_cdist(z):
     ''' Calculate the comoving distance 
 
     Parameters:
@@ -145,7 +145,7 @@ def cdist_to_z(dist):
     return z
 
 
-def zang(dl, z):
+def angular_size(dl, z):
     ''' Calculate the angular size of an object at a given
     redshift.
     
@@ -158,7 +158,7 @@ def zang(dl, z):
         
     '''
 
-    angle = 180./(3.1415)*3600.*dl*(1+z)**2/(1000*lumdist(z))
+    angle = 180./(3.1415)*3600.*dl*(1+z)**2/(1000*luminosity_distance(z))
     return outputify(angle)
 
 
@@ -197,20 +197,20 @@ def nu_to_cdist(nu21):
     
     '''
     redsh = nu_to_z(nu21)
-    return cdist(redsh)
+    return z_to_cdist(redsh)
     
-def ctop(cdist, z):
+def ctop(z_to_cdist, z):
     '''
     Convert comoving distance to proper distance
     
     Parameters:
-        * cdist: The comoving distance
+        * z_to_cdist: The comoving distance
         * z: the redshift
         
     Returns:
         Proper distance
     '''
-    return cdist/(1+z)
+    return z_to_cdist/(1+z)
 
 
 def ptoc(pdist, z):
