@@ -199,7 +199,7 @@ def nu_to_cdist(nu21):
     redsh = nu_to_z(nu21)
     return z_to_cdist(redsh)
     
-def ctop(z_to_cdist, z):
+def c_to_p(z_to_cdist, z):
     '''
     Convert comoving distance to proper distance
     
@@ -213,7 +213,7 @@ def ctop(z_to_cdist, z):
     return z_to_cdist/(1+z)
 
 
-def ptoc(pdist, z):
+def p_to_c(pdist, z):
     '''
     Convert proper distance to comoving distance
     
