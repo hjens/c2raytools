@@ -121,11 +121,10 @@ def read_binary_with_meshinfo(filename, bits=32, order='F'):
 	temp_mesh = np.fromfile(f,count=3,dtype='int32')
 	mesh_x, mesh_y, mesh_z = temp_mesh
 
-	#data = fread(f, mesh_x*mesh_y*mesh_z,'f')
-	datatype = (bits==32 and np.float32 or np.float64)
+	datatype = np.float32 if bits == 32 else np.float64
 	data = np.fromfile(f, dtype=datatype,count=mesh_x*mesh_y*mesh_z)
 	data = data.reshape((mesh_x, mesh_y, mesh_z), order=order)
-	return data.astype('float64')
+	return data
 
 def read_raw_binary(filename, bits=64, order='C'):
 	''' Read a raw binary file with no mesh info. The mesh
@@ -145,11 +144,11 @@ def read_raw_binary(filename, bits=64, order='C'):
 
 	f = open(filename)
 
-	datatype = (bits==32 and np.float32 or np.float64)
+	datatype = np.float32 if bits == 32 else np.float64
 	data = np.fromfile(f, dtype=datatype)
 	n = round(len(data)**(1./3.))
 	data = data.reshape((n, n, n), order=order)
-	return data.astype('float64')
+	return data
 
 
 def save_binary_with_meshinfo(filename, data, bits=32, order='F'):

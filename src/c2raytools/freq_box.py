@@ -77,7 +77,7 @@ def freq_box(xfrac_dir, dens_dir, z_low, z_high):
 	
 		>>> xfrac_dir = '/path/to/data/xfracs/'
 		>>> dens_dir = '/path/to/data/density/'
-		>>> xcube, dcube, dtcube, z = c2t.freq_box(xfrac_dir, density_dir, z_low=7.0, z_high=7.3)
+		>>> xcube, dcube, dtcube, z = c2t.freq_box(xfrac_dir, density_dir, z_low=7.0, z_high=8.)
 		
 	'''
 	
