@@ -44,6 +44,7 @@ class VelocityFile:
 			Nothing
 		'''
 		print_msg('Reading velocity file: %s...' % filename)
+		self.filename = filename
 
 		#Read raw data from velocity file
 		f = open(filename, 'rb')

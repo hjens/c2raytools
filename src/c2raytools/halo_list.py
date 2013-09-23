@@ -74,6 +74,7 @@ class HaloList:
 		self.halos = []
 
 		print_msg('Reading halo file %s...' % filename)
+		self.filename = filename
 		import fileinput
 
 		#Store the redshift from the filename

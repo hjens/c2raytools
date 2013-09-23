@@ -42,6 +42,7 @@ class XfracFile:
 			Nothing
 		'''
 		print_msg('Reading xfrac file:%s...' % filename)
+		self.filename = filename
 
 		f = open(filename, 'rb')
 		temp_mesh = np.fromfile(f, count=6, dtype='int32')
@@ -66,8 +67,3 @@ class XfracFile:
 			self.z = -1
 
 
-
-#--------------------TEST-----------------------
-if __name__ == '__main__':
-	pass
-#--------------------TEST-----------------------

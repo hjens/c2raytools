@@ -2,27 +2,29 @@ import const
 import conv
 import numpy as np
 import os
+import glob
 from temperature import calc_dt
-from helper_functions import print_msg, get_dens_redshifts
+from helper_functions import print_msg, get_dens_redshifts, get_mesh_size, \
+	determine_redshift_from_filename, get_data_and_type
 from xfrac_file import XfracFile
 from density_file import DensityFile
 
 
-def freq_axis(z_low, z_high, box_length_slices=256, \
+def redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=256, \
 			box_length_mpc = conv.LB):
 	''' 
 	Make a frequency axis vector with equal spacing in co-moving LOS coordinates. 
+	The comoving distance between each frequency will be the same as the cell
+	size of the box.
 	
 	Parameters:
 		* z_low (float): The lower redshift
 		* z_high (float): The upper redhisft 
-		* box_length_slices = 256 (int): the number of slices in an input box
+		* box_grid_n = 256 (int): the number of slices in an input box
 		* box_length_mpc = conv.LB (float): the size of the box in cMpc
 			 
 	Returns:
-		A tuple where the first element is a numpy array with the redshifts 
-		and the second elemet is a numpy array with the corresponding 21 cm line 
-		frequencies.
+		numpy array containing the redshifts
 		
 	'''
 	assert(z_high > z_low)
@@ -37,11 +39,11 @@ def freq_axis(z_low, z_high, box_length_slices=256, \
 		z_array.append(z)
 		nu_array.append(nu)
 
-		dnu = const.nu0*const.Hz(z)*box_length_mpc/(1.0 + z)**2/const.c/float(box_length_slices)
+		dnu = const.nu0*const.Hz(z)*box_length_mpc/(1.0 + z)**2/const.c/float(box_grid_n)
 
 		z = const.nu0/(nu - dnu) - 1.0
 
-	return np.array(z_array), np.array(nu_array) 
+	return np.array(z_array)
 
 
 def freq_box(xfrac_dir, dens_dir, z_low, z_high):
@@ -84,15 +86,14 @@ def freq_box(xfrac_dir, dens_dir, z_low, z_high):
 
 	#Get the list of redshifts where we have simulation output files
 	dens_redshifts = get_dens_redshifts(dens_dir, z_low )
+	mesh_size = get_mesh_size(os.path.join(dens_dir, '%.3fn_all.dat' % dens_redshifts[0]))
 
 	#Get the list of redhifts and frequencies that we want for the observational box
-	output_z, output_freq = freq_axis(z_low, z_high)
+	output_z = redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=mesh_size[0])
 	output_z = output_z[output_z > dens_redshifts[0]]
 	output_z = output_z[output_z < dens_redshifts[-1]]
 	if len(output_z) < 1:
 		raise Exception('No valid redshifts in range!')
-
-	print_msg( 'Number of slices reduced to: %d' % len(output_z) )
 
 	#Keep track of output simulation files to use
 	xfrac_file_low = XfracFile(); xfrac_file_high = XfracFile()
@@ -100,17 +101,17 @@ def freq_box(xfrac_dir, dens_dir, z_low, z_high):
 	z_bracket_low = None; z_bracket_high = None
 
 	#The current position in comoving coordinates
-	nx = 0
+	comoving_pos_idx = 0
 
 	#Build the cube
-	xfrac_cube = None
-	dens_cube = None
-	dt_cube = None
+	xfrac_lightcone = np.zeros((mesh_size[0], mesh_size[1], len(output_z)))
+	dens_lightcone = np.zeros_like(xfrac_lightcone)
+	dt_lightcone = np.zeros_like(xfrac_lightcone)
+	
 	for z in output_z:
-		print_msg('z=%.3f' % z)
 		#Find the output files that bracket the redshift
-		z_bracket_low_new = dens_redshifts[np.where(dens_redshifts <= z)[0][0]]
-		z_bracket_high_new = dens_redshifts[np.where(dens_redshifts >= z)[0][0]]
+		z_bracket_low_new = dens_redshifts[dens_redshifts <= z][0]
+		z_bracket_high_new = dens_redshifts[dens_redshifts >= z][0]
 
 		if z_bracket_low_new != z_bracket_low:
 			z_bracket_low = z_bracket_low_new
@@ -123,36 +124,162 @@ def freq_box(xfrac_dir, dens_dir, z_low, z_high):
 			xfrac_file_high = XfracFile(os.path.join(xfrac_dir, 'xfrac3d_%.3f.bin' % z_bracket_high))
 			dens_file_high = DensityFile(os.path.join(dens_dir, '%.3fn_all.dat' % z_bracket_high))
 			dt_cube_high = calc_dt(xfrac_file_high, dens_file_high)
+			
+		slice_ind = comoving_pos_idx % xfrac_file_high.mesh_x
+		
+		#Ionized fraction
+		xi_interp = _get_interp_slice(xfrac_file_high.xi, xfrac_file_low.xi, z_bracket_high, \
+									z_bracket_low, z, comoving_pos_idx)
+		xfrac_lightcone[:,:,comoving_pos_idx] = xi_interp
 
-		slice_ind = nx % xfrac_file_high.mesh_x
-		#The ionized fraction
-		XL = xfrac_file_low.xi[slice_ind,:,:]
-		XH = xfrac_file_high.xi[slice_ind,:,:]
-		Xz = ((z-z_bracket_low)*XH + (z_bracket_high - z)*XL)/(z_bracket_high-z_bracket_low) #Interpolate between slices
-		if xfrac_cube == None:
-			xfrac_cube = np.zeros((XL.shape[0], XL.shape[1], len(output_z)))
-		xfrac_cube[:,:,nx] = Xz
+		#Density
+		rho_interp = _get_interp_slice(dens_file_high.cgs_density, dens_file_low.cgs_density, z_bracket_high, \
+									z_bracket_low, z, comoving_pos_idx)
+		dens_lightcone[:,:,comoving_pos_idx] = rho_interp
 
-		#The density
-		rho_L = dens_file_low.cgs_density[slice_ind,:,:]
-		rho_H = dens_file_high.cgs_density[slice_ind,:,:]
-		rho_Z = ((z-z_bracket_low)*rho_H + (z_bracket_high - z)*rho_L)/(z_bracket_high-z_bracket_low) #Interpolate between slices
-		if dens_cube == None:
-			dens_cube = np.zeros((XL.shape[0], XL.shape[1], len(output_z)))
-		dens_cube[:,:,nx] = rho_Z
+		#Brightness temperature
+		dt_interp = _get_interp_slice(dt_cube_high, dt_cube_low, z_bracket_high, \
+									z_bracket_low, z, comoving_pos_idx)
+		dt_lightcone[:,:,comoving_pos_idx] = dt_interp
 
-		#The brightness temperature
-		dt_L = dt_cube_low[slice_ind,:,:]
-		dt_H = dt_cube_high[slice_ind,:,:]
-		dt_Z = ((z-z_bracket_low)*dt_H + (z_bracket_high - z)*dt_L)/(z_bracket_high-z_bracket_low) #Interpolate between slices
-		if dt_cube == None:
-			dt_cube = np.zeros((XL.shape[0], XL.shape[1], len(output_z)))
-		dt_cube[:,:,nx] = dt_Z
+		print_msg( 'Slice %d of %d' % (comoving_pos_idx, len(output_z)) )
+		comoving_pos_idx += 1
 
-		print_msg( 'Slice %d of %d' % (nx, len(output_z)) )
-		nx += 1
-
-	return xfrac_cube, dens_cube, dt_cube, output_z
+	return xfrac_lightcone, dens_lightcone, dt_lightcone, output_z
 
 
+def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None, \
+				cbin_bits = 32, cbin_order = 'c'):
+	'''
+	Make a lightcone from xfrac, density or dT data.
+	
+	Parameters:
+		* filenames (string or array): The coeval cubes. 
+			Can be either any of the following:
+			- An array with the file names
+			- A text file containing the file names
+			- The directory containing the files (must only contain 
+			one type of files)
+		* z_low (float): the lowest redshift. If not given, the redshift of the 
+			lowest-z coeval cube is used.
+		* z_high (float): the highest redshift. If not given, the redshift of the 
+			highest-z coeval cube is used.
+		* file_redshifts (string or array): The redshifts of the coeval cubes.
+			Can be any of the following types:
+			- None: determine the redshifts from file names 
+			- array: array containing the redshift of each coeval cube
+			- filename: the name of a data file to read the redshifts from
+		* cbin_bits (int): If the data files are in cbin format, you may specify 
+			the number of bits.
+		* cbin_order (char): If the data files are in cbin format, you may specify 
+			the order of the data.
+		
+	Returns:
+		(lightcone, z) tuple
+		lightcone is the lightcone volume where the first two axes
+		have the same size as the input cubes
+		
+		z is an array containing the redshifts along the line-of-sight
+	'''
+	
+	filenames = _get_filenames(filenames)
+	file_redshifts = _get_file_redshifts(file_redshifts, filenames)
+	assert(len(file_redshifts) == len(filenames))
+	mesh_size = get_mesh_size(filenames[0])
+		
+	output_z = redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=mesh_size[0])
+	output_z = output_z[output_z >= min(file_redshifts)]
+	output_z = output_z[output_z <= max(file_redshifts)]
+	if len(output_z) < 1:
+		raise Exception('No valid redshifts in range!')
 
+	lightcone = np.zeros((mesh_size[0], mesh_size[1], len(output_z)))
+	
+	comoving_pos_idx = 0
+	z_bracket_low = None; z_bracket_high = None
+	
+	for z in output_z:
+		z_bracket_low_new = file_redshifts[file_redshifts < z].max()
+		z_bracket_high_new = file_redshifts[file_redshifts > z].min()
+		
+		if z_bracket_low_new != z_bracket_low:
+			z_bracket_low = z_bracket_low_new
+			file_idx = np.argmin(np.abs(file_redshifts - z_bracket_low))
+			data_low, datatype = get_data_and_type(filenames[file_idx], cbin_bits, cbin_order)
+			
+		if z_bracket_high_new != z_bracket_high:
+			z_bracket_high = z_bracket_high_new
+			file_idx = np.argmin(np.abs(file_redshifts - z_bracket_high))
+			data_high, datatype = get_data_and_type(filenames[file_idx], cbin_bits, cbin_order)
+		
+		data_interp = _get_interp_slice(data_high, data_low, z_bracket_high, \
+									z_bracket_low, z, comoving_pos_idx)
+		lightcone[:,:,comoving_pos_idx] = data_interp
+		
+		comoving_pos_idx += 1
+		
+	return lightcone, output_z
+
+
+
+def _get_interp_slice(data_high, data_low, z_bracket_high, z_bracket_low, z, comoving_pos_idx):
+	slice_ind = comoving_pos_idx % data_low.shape[0]
+	slice_low = data_low[slice_ind,:,:]
+	slice_high = data_high[slice_ind,:,:]
+	slice_interp = ((z-z_bracket_low)*slice_high + (z_bracket_high - z)*slice_low)/(z_bracket_high-z_bracket_low)
+	
+	return slice_interp
+	
+	
+def _get_filenames(filenames_in):
+	'''
+	If filenames_in is a list of files, return as it is
+	If it is a directory, make sure it only contains data files,
+	then return the list of files in the directory
+	If it is a text file, read the list of files from the file
+	'''
+	
+	if hasattr(filenames_in, '__iter__'):
+		filenames_out = filenames_in
+	elif os.path.isdir(filenames_in):
+		files_in_dir = glob.glob(filenames_in + '/*')
+		extensions = [os.path.splitext(f)[-1] for f in files_in_dir]
+		if not _all_same(extensions):
+			raise Exception('The directory may only contain one file type.')
+		filenames_out = files_in_dir
+	else:
+		f = open(filenames_in)
+		names = [l.strip() for l in f.readlines()]
+		f.close()
+		filenames_out = names
+		
+	return np.array(filenames_out)
+	
+def _get_file_redshifts(redshifts_in, filenames):
+	'''
+	If redshifts_in is None, try to determine from file names
+	If it's a directory, read the redshifts
+	Else, return as is
+	'''
+	
+	if hasattr(redshifts_in, '__iter__'):
+		redshifts_out = redshifts_in
+	elif redshifts_in == None:
+		redshifts_out = [determine_redshift_from_filename(f) for f in filenames]
+		redshifts_out = np.array(redshifts_out)
+	elif os.path.exists(redshifts_in):
+		redshifts_out = np.loadtxt(redshifts_in)
+	else:
+		raise Exception('Invalid data for file redshifts.')
+	
+	return redshifts_out
+
+def _all_same(items):
+	return all(x == items[0] for x in items)
+
+
+#TEST--------------
+
+if __name__ == '__main__':
+	print _get_filenames('/home/hjens/links/local/slask/filenames_tmp.dat')
+	

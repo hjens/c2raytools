@@ -19,12 +19,10 @@ def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None):
 	Returns: 
 		The redhifts of the files (numpy array of floats) '''
 
-	#Make a list of xfrac files to be read, in the correct redshift interval
 	import glob
 	import os.path
 	xfrac_files = glob.glob(os.path.join(xfrac_dir,'xfrac*.bin'))
 
-	#Get all z in the range
 	redshifts = []
 	for f in xfrac_files:
 		try:
@@ -32,7 +30,7 @@ def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None):
 			redshifts.append(z)
 		except: 
 			pass
-	#redshifts = [float(f.split('_')[-1][:-4]) for f in xfrac_files]
+
 	if min_z:
 		redshifts = filter(lambda x : x > min_z, redshifts)
 	if max_z:
@@ -40,6 +38,7 @@ def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None):
 	redshifts.sort()
 
 	return np.array(redshifts)
+
 
 def get_dens_redshifts(dens_dir, min_z = None, max_z = None):
 	''' 
@@ -53,12 +52,10 @@ def get_dens_redshifts(dens_dir, min_z = None, max_z = None):
 	Returns: 
 		The redhifts of the files (numpy array of floats) '''
 
-	#Make a list of xfrac files to be read, in the correct redshift interval
 	import glob
 	import os.path
 	dens_files = glob.glob(os.path.join(dens_dir,'*n_all.dat'))
 
-	#Get all z in the range
 	redshifts = []
 	for f in dens_files:
 		try:
@@ -66,7 +63,7 @@ def get_dens_redshifts(dens_dir, min_z = None, max_z = None):
 			redshifts.append(z)
 		except:
 			pass
-	#redshifts = [float(os.path.split(f)[1].split('n_')[0]) for f in dens_files]
+		
 	if min_z:
 		redshifts = filter(lambda x : x > min_z, redshifts)
 	if max_z:
@@ -75,14 +72,17 @@ def get_dens_redshifts(dens_dir, min_z = None, max_z = None):
 
 	return np.array(redshifts)
 
+
 def print_msg(message):
 	''' Print a message of verbose is true '''
 	if verbose:
 		print message
+		
 
 def flt_comp(x,y, epsilon=0.0001):
 	''' Compare two floats, return true of difference is < epsilon '''
 	return abs(x-y) < epsilon
+
 
 def get_interpolated_array(in_array, new_len, kind='nearest'):
 	''' Get a higher-res version of an array.
@@ -101,13 +101,14 @@ def get_interpolated_array(in_array, new_len, kind='nearest'):
 	out_array = func(np.linspace(0,1,new_len))
 	return out_array
 
-def read_binary_with_meshinfo(filename, bits=32, order='F'):
+
+def read_binary_with_meshinfo(filename, bits=32, order='C'):
 	''' Read a binary file with three inital integers (a cbin file).
 	
 	Parameters:
 		* filename (string): the filename to read from
 		* bits = 32 (integer): the number of bits in the file
-		* order = 'F' (string): the ordering of the data. Can be 'C'
+		* order = 'C' (string): the ordering of the data. Can be 'C'
 			for C style ordering, or 'F' for fortran style.
 			
 	Returns:
@@ -125,6 +126,7 @@ def read_binary_with_meshinfo(filename, bits=32, order='F'):
 	data = np.fromfile(f, dtype=datatype,count=mesh_x*mesh_y*mesh_z)
 	data = data.reshape((mesh_x, mesh_y, mesh_z), order=order)
 	return data
+
 
 def read_raw_binary(filename, bits=64, order='C'):
 	''' Read a raw binary file with no mesh info. The mesh
@@ -151,14 +153,14 @@ def read_raw_binary(filename, bits=64, order='C'):
 	return data
 
 
-def save_binary_with_meshinfo(filename, data, bits=32, order='F'):
+def save_binary_with_meshinfo(filename, data, bits=32, order='C'):
 	''' Save a binary file with three inital integers (a cbin file).
 	
 	Parameters:
 		* filename (string): the filename to save to
 		* data (numpy array): the data to save
 		* bits = 32 (integer): the number of bits in the file
-		* order = 'F' (string): the ordering of the data. Can be 'C'
+		* order = 'C' (string): the ordering of the data. Can be 'C'
 			for C style ordering, or 'F' for fortran style.
 			
 	Returns:
@@ -171,6 +173,7 @@ def save_binary_with_meshinfo(filename, data, bits=32, order='F'):
 	datatype = (np.float32 if bits==32 else np.float64)
 	data.flatten(order=order).astype(datatype).tofile(f)
 	f.close()
+	
 	
 def read_fits(filename):
 	'''
@@ -186,6 +189,7 @@ def read_fits(filename):
 	import pyfits as pf
 	
 	return pf.open(filename)[0].data.astype('float64')
+
 
 def save_fits(data, filename):
 	'''
@@ -207,6 +211,7 @@ def save_fits(data, filename):
 	hdu = pf.PrimaryHDU(save_data.astype('float64'))
 	hdulist = pf.HDUList([hdu])
 	hdulist.writeto(filename, clobber=True)
+	
 
 def determine_filetype(filename):
 	'''
@@ -218,7 +223,7 @@ def determine_filetype(filename):
 		
 	Returns:
 		A string with the data type. Possible values are:
-		'xfrac', 'density', 'velocity', 'unknown'
+		'xfrac', 'density', 'velocity', 'cbin', 'unknown'
 		
 	'''
 	
@@ -230,9 +235,12 @@ def determine_filetype(filename):
 		return 'density'
 	elif 'v_all' in filename:
 		return 'velocity'
+	elif '.cbin' in filename:
+		return 'cbin'
 	return 'unknown'
 
-def get_data_and_type(indata):
+
+def get_data_and_type(indata, cbin_bits=32, cbin_order='c'):
 	'''
 	Extract the actual data from an object (which may
 	be a file object or a filename to be read), and
@@ -240,6 +248,8 @@ def get_data_and_type(indata):
 	
 	Parameters:
 		* indata (XfracFile, DensityFile, string or numpy array): the data
+		* cbin_bits (integer): the number of bits to use if indata is a cbin file
+		* cbin_order (string): the order of the data in indata if it's a cbin file
 		
 	Returns:
 		* A tuple with (outdata, type), where outdata is a numpy array 
@@ -261,11 +271,44 @@ def get_data_and_type(indata):
 			return get_data_and_type(c2raytools.xfrac_file.XfracFile(indata))
 		elif filetype == 'density':
 			return get_data_and_type(c2raytools.density_file.DensityFile(indata))
+		elif filetype == 'cbin':
+			return read_binary_with_meshinfo(indata, bits=cbin_bits, order=cbin_order)
 		else:
 			raise Exception('Unknown file type')
 	elif isinstance(indata, np.ndarray):
 		return indata, 'unknown'
 	raise Exception('Could not determine type of data')
+
+
+def get_mesh_size(filename):
+	'''
+	Read only the first three integers that specify the mesh size of a file.
+	
+	Parameters:
+		* filename (string): the file to read from. can be an xfrac file,
+			a density file or a cbin file.
+			
+	Returns:
+		(mx,my,mz) tuple
+	'''
+	datatype = determine_filetype(filename)
+	f = open(filename, 'rb')
+	if datatype == 'xfrac':
+		temp_mesh = np.fromfile(f, count=6, dtype='int32')
+		mesh_size = temp_mesh[1:4]
+	elif datatype == 'density':
+		mesh_size = np.fromfile(f,count=3,dtype='int32')
+	elif datatype == 'unknown':
+		if '.cbin' in filename:
+			mesh_size = np.fromfile(f,count=3,dtype='int32')
+		else:
+			f.close()
+			raise Exception('Invalid filetype: %s' % filename)
+	else:
+		raise Exception('Could not determine mesh for filetype %s' % datatype)
+	f.close()
+	return mesh_size
+		
 
 def outputify(output):
 	'''
@@ -287,6 +330,42 @@ def outputify(output):
 			return np.array(output)
 	return output
 		
+		
+def determine_redshift_from_filename(filename):
+	'''
+	Try to find the redshift hidden in the filename.
+	If there are many sequences of numbers in the filename
+	this method will guess that the longest sequence is the
+	redshift.
+	
+	Parameters:
+		* filename (string): the filename to analyze
+		
+	Returns:
+		* redshift (float)
+	'''
+	filename = os.path.basename(filename)
+	filename = os.path.splitext(filename)[0]
+	
+	number_strs = [] #Will contain all sequences of numbers
+	last_was_char = True
+	for s in filename:
+		if s.isdigit() or s == '.':
+			if last_was_char:
+				number_strs.append([])
+			last_was_char = False
+			number_strs[-1].append(s)
+		else:
+			last_was_char = True
+	
+	longest_idx = 0
+	for i in range(len(number_strs)):
+		if len(number_strs[i]) > len(number_strs[longest_idx]):
+			longest_idx = i
+		number_strs[i] = ''.join(number_strs[i])
+		
+	return float(number_strs[longest_idx])
+			
 
 verbose = False
 def set_verbose(verb):

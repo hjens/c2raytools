@@ -1,6 +1,8 @@
 import numpy as np
 import const
-from helper_functions import print_msg
+import conv
+import cosmology
+from helper_functions import print_msg, read_binary_with_meshinfo
 from xfrac_file import XfracFile
 from density_file import DensityFile
 
@@ -38,22 +40,53 @@ def calc_dt(xfrac, dens, z = -1):
 		rho = dfile.raw_density.astype('float64')
 	else:
 		rho = dens.astype('float64')
+	
+	#Calculate dT
+	return _dt(rho, xi, z)
+	
 
-	print_msg('Calculating differential brightness temperature...')
-	print_msg('The redshift is %.3f' % z)
+def calc_dt_lightcone(xfrac, dens, lowest_z):
+	'''
+	Calculate the differential brightness temperature assuming T_s >> T_CMB
+	for lightcone data.
+	
+	Parameters:
+		* xfrac (string): the name of the ionization fraction file (must be cbin)
+		* dens (string): the name of the density file (must be cbin)
+		* lowest_z (float): the lowest redshift of the lightcone volume
+		
+	Returns:
+		The differential brightness temperature as a numpy array with
+		the same dimensions as xfrac.
+	'''
+	los_axis = 2
+	try:
+		xfrac = read_binary_with_meshinfo(xfrac)
+	except Exception:
+		xfrac = xfrac.astype('float64')
+	try:
+		dens = read_binary_with_meshinfo(dens)
+	except:
+		dens = dens.astype('float64')
+		
+	cell_size = conv.LB/xfrac.shape[(los_axis+1)%3]
+	cdist_low = cosmology.z_to_cdist(lowest_z)
+	cdist = np.arange(xfrac.shape[los_axis])*cell_size + cdist_low
+	z = cosmology.cdist_to_z(cdist)
+	return _dt(dens, xfrac, z)
+	
 
+def _dt(rho, xi, z):
 	rho_mean = np.mean(rho)
 
-	#Redshift dependent Hubble constant
-	Ez = np.sqrt(const.Omega0*(1.0+z)**3+const.lam+(1.0-const.Omega0-const.lam)*(1.0+z)**2)
+	Ez = np.sqrt(const.Omega0*(1.0+z)**3+const.lam+\
+				(1.0-const.Omega0-const.lam)*(1.0+z)**2)
 
-	#The temperature box
 	Cdt = const.meandt/const.h*(1.0+z)**2/Ez
 	dt = Cdt*(1.0-xi)*rho/rho_mean
 	
-	print_msg('...done')
-
 	return dt
+	
 
 #---------TEST-----------
 if __name__ == '__main__':

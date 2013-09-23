@@ -46,6 +46,7 @@ class DensityFile:
 		'''
 
 		print_msg('Reading density file:%s ...' % filename)
+		self.filename = filename
 		#Read raw data from density file
 		f = open(filename, 'rb')
 
