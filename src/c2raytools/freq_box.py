@@ -74,6 +74,10 @@ def freq_box(xfrac_dir, dens_dir, z_low, z_high):
 		Ionization files must be named xfrac3d_z.bin and densityfiles
 		zn_all.dat
 		
+	.. note::
+		The make_lightcone method is meant to replace this method. It
+		is more general and easier to use.
+	
 	Example:
 		Make a lightcone cube ranging from z = 7 to z = 8:
 	
@@ -82,7 +86,6 @@ def freq_box(xfrac_dir, dens_dir, z_low, z_high):
 		>>> xcube, dcube, dtcube, z = c2t.freq_box(xfrac_dir, density_dir, z_low=7.0, z_high=8.)
 		
 	'''
-	
 
 	#Get the list of redshifts where we have simulation output files
 	dens_redshifts = get_dens_redshifts(dens_dir, z_low )
@@ -151,24 +154,31 @@ def freq_box(xfrac_dir, dens_dir, z_low, z_high):
 def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None, \
 				cbin_bits = 32, cbin_order = 'c'):
 	'''
-	Make a lightcone from xfrac, density or dT data.
+	Make a lightcone from xfrac, density or dT data. Replaces freq_box.
 	
 	Parameters:
 		* filenames (string or array): The coeval cubes. 
 			Can be either any of the following:
-			- An array with the file names
-			- A text file containing the file names
-			- The directory containing the files (must only contain 
-			one type of files)
+			
+			 	- An array with the file names
+			 	
+			 	- A text file containing the file names
+			 	
+				- The directory containing the files (must only contain 
+				one type of files)
 		* z_low (float): the lowest redshift. If not given, the redshift of the 
 			lowest-z coeval cube is used.
 		* z_high (float): the highest redshift. If not given, the redshift of the 
 			highest-z coeval cube is used.
 		* file_redshifts (string or array): The redshifts of the coeval cubes.
 			Can be any of the following types:
-			- None: determine the redshifts from file names 
+			
+			- None: determine the redshifts from file names
+			 
 			- array: array containing the redshift of each coeval cube
+			
 			- filename: the name of a data file to read the redshifts from
+			
 		* cbin_bits (int): If the data files are in cbin format, you may specify 
 			the number of bits.
 		* cbin_order (char): If the data files are in cbin format, you may specify 
@@ -176,20 +186,36 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
 		
 	Returns:
 		(lightcone, z) tuple
+		
 		lightcone is the lightcone volume where the first two axes
 		have the same size as the input cubes
 		
 		z is an array containing the redshifts along the line-of-sight
+		
+	.. note::
+		If z_low is given, that redshift will be the lowest one included,
+		even if there is no coeval box at exactly that redshift. This can 
+		give results that are subtly different from results calculated with
+		the old freq_box routine.
 	'''
 	
 	filenames = _get_filenames(filenames)
 	file_redshifts = _get_file_redshifts(file_redshifts, filenames)
 	assert(len(file_redshifts) == len(filenames))
 	mesh_size = get_mesh_size(filenames[0])
+	
+	if z_low == None:
+		z_low = file_redshifts.min()
+	if z_high == None:
+		z_high = file_redshifts.max()
 		
 	output_z = redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=mesh_size[0])
-	output_z = output_z[output_z >= min(file_redshifts)]
-	output_z = output_z[output_z <= max(file_redshifts)]
+	if min(output_z) < min(file_redshifts) or max(output_z) > max(file_redshifts):
+		print 'Warning! You have specified a redshift range of %.3f < z < %.3f, but \
+		you only have files for the range %.3f < z < %.3f. The redshift range will be \
+		truncated.' % (min(output_z), max(output_z), min(file_redshifts), max(file_redshifts))
+		output_z = output_z[output_z >= min(file_redshifts)]
+		output_z = output_z[output_z <= max(file_redshifts)]
 	if len(output_z) < 1:
 		raise Exception('No valid redshifts in range!')
 
@@ -219,7 +245,6 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
 		comoving_pos_idx += 1
 		
 	return lightcone, output_z
-
 
 
 def _get_interp_slice(data_high, data_low, z_bracket_high, z_bracket_low, z, comoving_pos_idx):

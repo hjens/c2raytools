@@ -118,6 +118,8 @@ def read_binary_with_meshinfo(filename, bits=32, order='C'):
 	assert(bits ==32 or bits==64)
 
 	f = open(filename)
+	
+	print_msg('Reading cbin file: %s' % filename)
 
 	temp_mesh = np.fromfile(f,count=3,dtype='int32')
 	mesh_x, mesh_y, mesh_z = temp_mesh
@@ -254,7 +256,7 @@ def get_data_and_type(indata, cbin_bits=32, cbin_order='c'):
 	Returns:
 		* A tuple with (outdata, type), where outdata is a numpy array 
 		containing the actual data and type is a string with the type 
-		of data. Possible values for type are 'xfrac', 'density', 
+		of data. Possible values for type are 'xfrac', 'density', 'cbin'
 		and 'unknown'
 		
 	'''
@@ -272,7 +274,8 @@ def get_data_and_type(indata, cbin_bits=32, cbin_order='c'):
 		elif filetype == 'density':
 			return get_data_and_type(c2raytools.density_file.DensityFile(indata))
 		elif filetype == 'cbin':
-			return read_binary_with_meshinfo(indata, bits=cbin_bits, order=cbin_order)
+			return read_binary_with_meshinfo(indata, bits=cbin_bits, \
+											order=cbin_order), 'cbin'
 		else:
 			raise Exception('Unknown file type')
 	elif isinstance(indata, np.ndarray):
@@ -298,12 +301,8 @@ def get_mesh_size(filename):
 		mesh_size = temp_mesh[1:4]
 	elif datatype == 'density':
 		mesh_size = np.fromfile(f,count=3,dtype='int32')
-	elif datatype == 'unknown':
-		if '.cbin' in filename:
-			mesh_size = np.fromfile(f,count=3,dtype='int32')
-		else:
-			f.close()
-			raise Exception('Invalid filetype: %s' % filename)
+	elif datatype == 'cbin':
+		mesh_size = np.fromfile(f,count=3,dtype='int32')
 	else:
 		raise Exception('Could not determine mesh for filetype %s' % datatype)
 	f.close()
@@ -368,7 +367,7 @@ def determine_redshift_from_filename(filename):
 			
 
 verbose = False
-def set_verbose(verb):
+def set_verbose(_verbose):
 	'''
 	Turn on or off verbose mode.
 	
@@ -379,4 +378,4 @@ def set_verbose(verb):
 		Nothing
 	'''
 	global verbose
-	verbose = verb
+	verbose = _verbose

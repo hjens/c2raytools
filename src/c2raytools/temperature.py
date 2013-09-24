@@ -63,11 +63,11 @@ def calc_dt_lightcone(xfrac, dens, lowest_z):
 	try:
 		xfrac = read_binary_with_meshinfo(xfrac)
 	except Exception:
-		xfrac = xfrac.astype('float64')
+		pass
 	try:
 		dens = read_binary_with_meshinfo(dens)
 	except:
-		dens = dens.astype('float64')
+		pass
 		
 	cell_size = conv.LB/xfrac.shape[(los_axis+1)%3]
 	cdist_low = cosmology.z_to_cdist(lowest_z)
