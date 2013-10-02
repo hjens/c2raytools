@@ -11,7 +11,7 @@ from density_file import DensityFile
 
 
 def redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=256, \
-			box_length_mpc = conv.LB):
+			box_length_mpc = None):
 	''' 
 	Make a frequency axis vector with equal spacing in co-moving LOS coordinates. 
 	The comoving distance between each frequency will be the same as the cell
@@ -21,12 +21,15 @@ def redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=256, \
 		* z_low (float): The lower redshift
 		* z_high (float): The upper redhisft 
 		* box_grid_n = 256 (int): the number of slices in an input box
-		* box_length_mpc = conv.LB (float): the size of the box in cMpc
+		* box_length_mpc (float): the size of the box in cMpc. If None,
+		set to conv.LB
 			 
 	Returns:
 		numpy array containing the redshifts
 		
 	'''
+	if box_length_mpc == None:
+		box_length_mpc = conv.LB
 	assert(z_high > z_low)
 
 	z = z_low
