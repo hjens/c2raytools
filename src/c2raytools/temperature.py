@@ -2,7 +2,7 @@ import numpy as np
 import const
 import conv
 import cosmology
-from helper_functions import print_msg, read_binary_with_meshinfo
+from helper_functions import print_msg, read_cbin
 from xfrac_file import XfracFile
 from density_file import DensityFile
 
@@ -61,11 +61,11 @@ def calc_dt_lightcone(xfrac, dens, lowest_z):
 	'''
 	los_axis = 2
 	try:
-		xfrac = read_binary_with_meshinfo(xfrac)
+		xfrac = read_cbin(xfrac)
 	except Exception:
 		pass
 	try:
-		dens = read_binary_with_meshinfo(dens)
+		dens = read_cbin(dens)
 	except:
 		pass
 		

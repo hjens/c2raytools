@@ -1,7 +1,7 @@
 import numpy as np
 import const
 import conv
-from helper_functions import print_msg, get_interpolated_array, read_binary_with_meshinfo
+from helper_functions import print_msg, get_interpolated_array, read_cbin
 import vel_file
 import density_file
 
@@ -120,7 +120,7 @@ def make_pv_box(dT_filename, vel_filename, dens_filename, z, los = 0, num_partic
 		The redshift space box
 	'''
 
-	dT = read_binary_with_meshinfo(dT_filename, bits=32, order='c')
+	dT = read_cbin(dT_filename, bits=32, order='c')
 	vfile = vel_file.VelocityFile(vel_filename)
 	dfile = density_file.DensityFile(dens_filename)
 	kms = vfile.get_kms_from_density(dfile)

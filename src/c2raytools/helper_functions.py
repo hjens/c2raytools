@@ -102,7 +102,7 @@ def get_interpolated_array(in_array, new_len, kind='nearest'):
 	return out_array
 
 
-def read_binary_with_meshinfo(filename, bits=32, order='C'):
+def read_cbin(filename, bits=32, order='C'):
 	''' Read a binary file with three inital integers (a cbin file).
 	
 	Parameters:
@@ -155,7 +155,7 @@ def read_raw_binary(filename, bits=64, order='C'):
 	return data
 
 
-def save_binary_with_meshinfo(filename, data, bits=32, order='C'):
+def save_cbin(filename, data, bits=32, order='C'):
 	''' Save a binary file with three inital integers (a cbin file).
 	
 	Parameters:
@@ -274,7 +274,7 @@ def get_data_and_type(indata, cbin_bits=32, cbin_order='c'):
 		elif filetype == 'density':
 			return get_data_and_type(c2raytools.density_file.DensityFile(indata))
 		elif filetype == 'cbin':
-			return read_binary_with_meshinfo(indata, bits=cbin_bits, \
+			return read_cbin(indata, bits=cbin_bits, \
 											order=cbin_order), 'cbin'
 		else:
 			raise Exception('Unknown file type')

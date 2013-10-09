@@ -9,151 +9,6 @@ from helper_functions import print_msg, get_dens_redshifts, get_mesh_size, \
 from xfrac_file import XfracFile
 from density_file import DensityFile
 
-
-def redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=256, \
-			box_length_mpc = None):
-	''' 
-	Make a frequency axis vector with equal spacing in co-moving LOS coordinates. 
-	The comoving distance between each frequency will be the same as the cell
-	size of the box.
-	
-	Parameters:
-		* z_low (float): The lower redshift
-		* z_high (float): The upper redhisft 
-		* box_grid_n = 256 (int): the number of slices in an input box
-		* box_length_mpc (float): the size of the box in cMpc. If None,
-		set to conv.LB
-			 
-	Returns:
-		numpy array containing the redshifts
-		
-	'''
-	if box_length_mpc == None:
-		box_length_mpc = conv.LB
-	assert(z_high > z_low)
-
-	z = z_low
-	z_array = []
-	nu_array = []
-
-	while z < z_high:
-		nu = const.nu0/(1.0+z)
-
-		z_array.append(z)
-		nu_array.append(nu)
-
-		dnu = const.nu0*const.Hz(z)*box_length_mpc/(1.0 + z)**2/const.c/float(box_grid_n)
-
-		z = const.nu0/(nu - dnu) - 1.0
-
-	return np.array(z_array)
-
-
-def freq_box(xfrac_dir, dens_dir, z_low, z_high):
-	''' 
-	Make frequency (lightcone) boxes of density, ionized fractions, 
-	and brightness temperature. The function reads xfrac and density
-	files from the specified directories and combines them into a 
-	lighcone box going from z_low to z_high.
-	
-	This routine is more or less a direct translation of Garrelt's 
-	IDL routine.
-	
-	Parameters: 
-		* xfrac_dir (string): directory containing xfrac files
-		* dens_dir (string): directory containing density files
-		* z_low (float): lowest redshift to include
-		* z_high (float): highest redshift to include.
-
-	Returns: 
-		Tuple with (density box, xfrac box, dt box, redshifts), where
-		density box, xfrac box and dt box are numpy arrays containing
-		the lightcone quantities. redshifts is an array containing the 
-		redshift for each slice.
-		
-	.. note::
-		Since this function relies on filenames to get redshifts,
-		all the data files must follow the common naming convenstions.
-		Ionization files must be named xfrac3d_z.bin and densityfiles
-		zn_all.dat
-		
-	.. note::
-		The make_lightcone method is meant to replace this method. It
-		is more general and easier to use.
-	
-	Example:
-		Make a lightcone cube ranging from z = 7 to z = 8:
-	
-		>>> xfrac_dir = '/path/to/data/xfracs/'
-		>>> dens_dir = '/path/to/data/density/'
-		>>> xcube, dcube, dtcube, z = c2t.freq_box(xfrac_dir, density_dir, z_low=7.0, z_high=8.)
-		
-	'''
-
-	#Get the list of redshifts where we have simulation output files
-	dens_redshifts = get_dens_redshifts(dens_dir, z_low )
-	mesh_size = get_mesh_size(os.path.join(dens_dir, '%.3fn_all.dat' % dens_redshifts[0]))
-
-	#Get the list of redhifts and frequencies that we want for the observational box
-	output_z = redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=mesh_size[0])
-	output_z = output_z[output_z > dens_redshifts[0]]
-	output_z = output_z[output_z < dens_redshifts[-1]]
-	if len(output_z) < 1:
-		raise Exception('No valid redshifts in range!')
-
-	#Keep track of output simulation files to use
-	xfrac_file_low = XfracFile(); xfrac_file_high = XfracFile()
-	dens_file_low = DensityFile(); dens_file_high = DensityFile()
-	z_bracket_low = None; z_bracket_high = None
-
-	#The current position in comoving coordinates
-	comoving_pos_idx = 0
-
-	#Build the cube
-	xfrac_lightcone = np.zeros((mesh_size[0], mesh_size[1], len(output_z)))
-	dens_lightcone = np.zeros_like(xfrac_lightcone)
-	dt_lightcone = np.zeros_like(xfrac_lightcone)
-	
-	for z in output_z:
-		#Find the output files that bracket the redshift
-		z_bracket_low_new = dens_redshifts[dens_redshifts <= z][0]
-		z_bracket_high_new = dens_redshifts[dens_redshifts >= z][0]
-
-		if z_bracket_low_new != z_bracket_low:
-			z_bracket_low = z_bracket_low_new
-			xfrac_file_low = XfracFile(os.path.join(xfrac_dir, 'xfrac3d_%.3f.bin' % z_bracket_low))
-			dens_file_low = DensityFile(os.path.join(dens_dir, '%.3fn_all.dat' % z_bracket_low))
-			dt_cube_low = calc_dt(xfrac_file_low, dens_file_low)
-
-		if z_bracket_high_new != z_bracket_high:
-			z_bracket_high = z_bracket_high_new
-			xfrac_file_high = XfracFile(os.path.join(xfrac_dir, 'xfrac3d_%.3f.bin' % z_bracket_high))
-			dens_file_high = DensityFile(os.path.join(dens_dir, '%.3fn_all.dat' % z_bracket_high))
-			dt_cube_high = calc_dt(xfrac_file_high, dens_file_high)
-			
-		slice_ind = comoving_pos_idx % xfrac_file_high.mesh_x
-		
-		#Ionized fraction
-		xi_interp = _get_interp_slice(xfrac_file_high.xi, xfrac_file_low.xi, z_bracket_high, \
-									z_bracket_low, z, comoving_pos_idx)
-		xfrac_lightcone[:,:,comoving_pos_idx] = xi_interp
-
-		#Density
-		rho_interp = _get_interp_slice(dens_file_high.cgs_density, dens_file_low.cgs_density, z_bracket_high, \
-									z_bracket_low, z, comoving_pos_idx)
-		dens_lightcone[:,:,comoving_pos_idx] = rho_interp
-
-		#Brightness temperature
-		dt_interp = _get_interp_slice(dt_cube_high, dt_cube_low, z_bracket_high, \
-									z_bracket_low, z, comoving_pos_idx)
-		dt_lightcone[:,:,comoving_pos_idx] = dt_interp
-
-		print_msg( 'Slice %d of %d' % (comoving_pos_idx, len(output_z)) )
-		comoving_pos_idx += 1
-
-	return xfrac_lightcone, dens_lightcone, dt_lightcone, output_z
-
-
 def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None, \
 				cbin_bits = 32, cbin_order = 'c', los_axis = 0):
 	'''
@@ -251,6 +106,45 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
 	return lightcone, output_z
 
 
+def redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=256, \
+			box_length_mpc = None):
+	''' 
+	Make a frequency axis vector with equal spacing in co-moving LOS coordinates. 
+	The comoving distance between each frequency will be the same as the cell
+	size of the box.
+	
+	Parameters:
+		* z_low (float): The lower redshift
+		* z_high (float): The upper redhisft 
+		* box_grid_n = 256 (int): the number of slices in an input box
+		* box_length_mpc (float): the size of the box in cMpc. If None,
+		set to conv.LB
+			 
+	Returns:
+		numpy array containing the redshifts
+		
+	'''
+	if box_length_mpc == None:
+		box_length_mpc = conv.LB
+	assert(z_high > z_low)
+
+	z = z_low
+	z_array = []
+	nu_array = []
+
+	while z < z_high:
+		nu = const.nu0/(1.0+z)
+
+		z_array.append(z)
+		nu_array.append(nu)
+
+		dnu = const.nu0*const.Hz(z)*box_length_mpc/(1.0 + z)**2/const.c/float(box_grid_n)
+
+		z = const.nu0/(nu - dnu) - 1.0
+
+	return np.array(z_array)
+
+
 def _get_interp_slice(data_high, data_low, z_bracket_high, z_bracket_low, z, comoving_pos_idx, los_axis):
 	slice_ind = comoving_pos_idx % data_low.shape[0]
 	#slice_low = data_low[slice_ind,:,:]
@@ -269,6 +163,7 @@ def _get_slice(data, idx, los_axis):
 		return data[idx,:,:]
 	elif los_axis == 1:
 		return data[:,idx,:]
+	
 	return data[:,:,idx]
 	
 	
@@ -295,6 +190,7 @@ def _get_filenames(filenames_in):
 		filenames_out = names
 		
 	return np.array(filenames_out)
+
 	
 def _get_file_redshifts(redshifts_in, filenames):
 	'''
@@ -315,12 +211,8 @@ def _get_file_redshifts(redshifts_in, filenames):
 	
 	return redshifts_out
 
+
 def _all_same(items):
 	return all(x == items[0] for x in items)
 
-
-#TEST--------------
-
-if __name__ == '__main__':
-	print _get_filenames('/home/hjens/links/local/slask/filenames_tmp.dat')
 	
