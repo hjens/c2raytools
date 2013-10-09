@@ -155,7 +155,7 @@ def freq_box(xfrac_dir, dens_dir, z_low, z_high):
 
 
 def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None, \
-				cbin_bits = 32, cbin_order = 'c'):
+				cbin_bits = 32, cbin_order = 'c', los_axis = 0):
 	'''
 	Make a lightcone from xfrac, density or dT data. Replaces freq_box.
 	
@@ -186,6 +186,7 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
 			the number of bits.
 		* cbin_order (char): If the data files are in cbin format, you may specify 
 			the order of the data.
+		* los_axis (int): the axis to use as line-of-sight for the coeval cubes
 		
 	Returns:
 		(lightcone, z) tuple
@@ -214,9 +215,9 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
 		
 	output_z = redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=mesh_size[0])
 	if min(output_z) < min(file_redshifts) or max(output_z) > max(file_redshifts):
-		print 'Warning! You have specified a redshift range of %.3f < z < %.3f, but \
-		you only have files for the range %.3f < z < %.3f. The redshift range will be \
-		truncated.' % (min(output_z), max(output_z), min(file_redshifts), max(file_redshifts))
+		print 'Warning! You have specified a redshift range of %.3f < z < %.3f' % (min(output_z), max(output_z))
+		print 'but you only have files for the range %.3f < z < %.3f.' % (min(file_redshifts), max(file_redshifts))
+		print 'The redshift range will be truncated.'
 		output_z = output_z[output_z >= min(file_redshifts)]
 		output_z = output_z[output_z <= max(file_redshifts)]
 	if len(output_z) < 1:
@@ -242,7 +243,7 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
 			data_high, datatype = get_data_and_type(filenames[file_idx], cbin_bits, cbin_order)
 		
 		data_interp = _get_interp_slice(data_high, data_low, z_bracket_high, \
-									z_bracket_low, z, comoving_pos_idx)
+									z_bracket_low, z, comoving_pos_idx, los_axis)
 		lightcone[:,:,comoving_pos_idx] = data_interp
 		
 		comoving_pos_idx += 1
@@ -250,13 +251,25 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
 	return lightcone, output_z
 
 
-def _get_interp_slice(data_high, data_low, z_bracket_high, z_bracket_low, z, comoving_pos_idx):
+def _get_interp_slice(data_high, data_low, z_bracket_high, z_bracket_low, z, comoving_pos_idx, los_axis):
 	slice_ind = comoving_pos_idx % data_low.shape[0]
-	slice_low = data_low[slice_ind,:,:]
-	slice_high = data_high[slice_ind,:,:]
+	#slice_low = data_low[slice_ind,:,:]
+	#slice_high = data_high[slice_ind,:,:]
+	slice_low = _get_slice(data_low, slice_ind, los_axis)
+	slice_high = _get_slice(data_high, slice_ind, los_axis)
 	slice_interp = ((z-z_bracket_low)*slice_high + (z_bracket_high - z)*slice_low)/(z_bracket_high-z_bracket_low)
 	
 	return slice_interp
+
+
+def _get_slice(data, idx, los_axis):
+	assert(len(data.shape) == 3)
+	assert(los_axis >= 0 and los_axis < len(data.shape))
+	if los_axis == 0:
+		return data[idx,:,:]
+	elif los_axis == 1:
+		return data[:,idx,:]
+	return data[:,:,idx]
 	
 	
 def _get_filenames(filenames_in):
