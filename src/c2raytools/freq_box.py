@@ -84,8 +84,8 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
 	z_bracket_low = None; z_bracket_high = None
 	
 	for z in output_z:
-		z_bracket_low_new = file_redshifts[file_redshifts < z].max()
-		z_bracket_high_new = file_redshifts[file_redshifts > z].min()
+		z_bracket_low_new = file_redshifts[file_redshifts <= z].max()
+		z_bracket_high_new = file_redshifts[file_redshifts >= z].min()
 		
 		if z_bracket_low_new != z_bracket_low:
 			z_bracket_low = z_bracket_low_new
