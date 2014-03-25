@@ -42,6 +42,7 @@ def power_spectrum_nd(input_array, box_dims = None):
 
 	return power_spectrum
 
+
 def cross_power_spectrum_nd(input_array1, input_array2, box_dims):
 	''' 
 	Calculate the cross power spectrum two arrays and return it as an n-dimensional array,
@@ -150,6 +151,7 @@ def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None):
 
 	return radial_average(input_array, kbins=kbins, box_dims=box_dims)
 
+
 def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dims=None):
 	''' Calculate the spherically averaged cross power spectrum of two arrays 
 	and return it as a one-dimensional array.
@@ -176,6 +178,7 @@ def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dim
 	input_array = cross_power_spectrum_nd(input_array1_nd, input_array2_nd, box_dims=box_dims)	
 
 	return radial_average(input_array, kbins=kbins, box_dims = box_dims)
+
 
 def power_spectrum_mu(input_array, los_axis = 0, mubins=20, kbins=10, box_dims = None, weights=None,
 					exclude_zero_modes = True):
@@ -212,6 +215,7 @@ def power_spectrum_mu(input_array, los_axis = 0, mubins=20, kbins=10, box_dims =
 	powerspectrum = power_spectrum_nd(input_array, box_dims=box_dims)	
 
 	return mu_binning(powerspectrum, los_axis, mubins, kbins, box_dims, weights, exclude_zero_modes)
+
 
 def cross_power_spectrum_mu(input_array1, input_array2, los_axis = 0, mubins=20, kbins=10, 
 						box_dims = None, weights=None, exclude_zero_modes = True):
@@ -255,7 +259,9 @@ def cross_power_spectrum_mu(input_array1, input_array2, los_axis = 0, mubins=20,
 
 def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None, weights=None,
 			exclude_zero_modes = True):
-	#This function is for internal use only.
+	'''
+	This function is for internal use only.
+	'''
 	
 	if weights != None:
 		powerspectrum *= weights
@@ -305,6 +311,7 @@ def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None
 
 	return outdata, mubins[:-1]+dmu, kbins[:-1]+dk
 
+
 #Some methods for internal use
 
 def _get_k(input_array, box_dims):
@@ -330,16 +337,6 @@ def _get_k(input_array, box_dims):
 		kz = 2.*np.pi * (z-center[2])/box_dims[2]
 		k = np.sqrt(kx**2 + ky**2 + kz**2 ) 		
 		return [kx,ky,kz], k
-	
-#	center = np.array([(s-1)/2 for s in input_array.shape])
-#	print center
-#	inds = np.indices(input_array.shape)
-#
-#	k_comp = [(inds[i,:,:,:]-center[i])/box_dims[i] for i in range(dim)]
-#	k_comp = 2.*np.pi * np.array(k_comp)
-#	k = np.sqrt(np.sum(k_comp**2))
-#	return k_comp, k
-
 
 
 def _get_mu(k_comp, k, los_axis):
@@ -364,6 +361,7 @@ def _get_mu(k_comp, k, los_axis):
 	
 	return mu
 
+
 def _get_kbins(kbins, box_dims, k):
 	'''
 	Make a list of bin edges if kbins is an integer,
@@ -373,6 +371,7 @@ def _get_kbins(kbins, box_dims, k):
 		kmin = 2.*np.pi/min(box_dims)
 		kbins = 10**np.linspace(np.log10(kmin), np.log10(k.max()), kbins+1)
 	return kbins
+
 
 def _get_dims(box_dims, ashape):
 	'''
