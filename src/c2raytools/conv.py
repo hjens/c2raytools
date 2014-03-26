@@ -22,7 +22,7 @@ def set_sim_constants(boxsize_cMpc):
 	simulation
 	
 	Parameters:
-		* boxsize_cMpc (float): he box size in cMpc/h
+		* boxsize_cMpc (float): the box size in cMpc/h
 		Valid values are 37, 64, 114, 425 or 500
 		
 	Returns:

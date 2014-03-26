@@ -113,7 +113,7 @@ def make_pv_box(dT_filename, vel_filename, dens_filename, z, los = 0, num_partic
 		* dens_filename (string): the name of the density file
 		* z (float): the redshift
 		* los (integer): the line-of-sight axis
-		* num_particles (integer): the number of particels to pass
+		* num_particles (integer): the number of particles to pass
 			to get_distorted_dt
 		
 	Returns:

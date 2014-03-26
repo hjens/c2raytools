@@ -341,7 +341,8 @@ def determine_redshift_from_filename(filename):
 		* filename (string): the filename to analyze
 		
 	Returns:
-		* redshift (float)
+		* redshift (float) 
+		If no redshift could be found, return -1
 	'''
 	filename = os.path.basename(filename)
 	filename = os.path.splitext(filename)[0]
@@ -362,6 +363,9 @@ def determine_redshift_from_filename(filename):
 		if len(number_strs[i]) > len(number_strs[longest_idx]):
 			longest_idx = i
 		number_strs[i] = ''.join(number_strs[i])
+		
+	if len(number_strs) == 0:
+		return -1
 		
 	return float(number_strs[longest_idx])
 			

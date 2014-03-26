@@ -2,9 +2,8 @@ import numpy as np
 import const
 import conv
 import cosmology
-from helper_functions import print_msg, read_cbin
-from xfrac_file import XfracFile
-from density_file import DensityFile
+from helper_functions import print_msg, read_cbin, \
+	get_data_and_type, determine_redshift_from_filename
 
 def calc_dt(xfrac, dens, z = -1):
 	'''
@@ -20,26 +19,16 @@ def calc_dt(xfrac, dens, z = -1):
 		the same dimensions as xfrac.
 	'''
 
-	#Figure out types of xfrac and dens
-	if isinstance(xfrac, XfracFile):
-		z = xfrac.z
-		xi = xfrac.xi.astype('float64')
-	elif isinstance(xfrac, str):
-		xfile = XfracFile(xfrac)
-		z = xfile.z
-		xi = xfile.xi.astype('float64')
-		if z < 0:
-			print 'Warning. Please supply a redshift for calc_dt'
-	else:
-		xi = xfrac.astype('float64')
-
-	if isinstance(dens, DensityFile):
-		rho = dens.raw_density.astype('float64')
-	elif isinstance(dens, str):
-		dfile = DensityFile(dens)
-		rho = dfile.raw_density.astype('float64')
-	else:
-		rho = dens.astype('float64')
+	xi, xi_type = get_data_and_type(xfrac)
+	rho, rho_type = get_data_and_type(dens)
+	xi = xi.astype('float64')
+	rho = rho.astype('float64')
+	
+	z = determine_redshift_from_filename(xfrac)
+	if z < 0:
+		z = determine_redshift_from_filename(dens)
+	if z < 0:
+		raise Exception('No redshift specified. Could not determine from file.')
 	
 	#Calculate dT
 	return _dt(rho, xi, z)
