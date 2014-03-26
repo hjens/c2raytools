@@ -24,11 +24,14 @@ def calc_dt(xfrac, dens, z = -1):
 	xi = xi.astype('float64')
 	rho = rho.astype('float64')
 	
-	z = determine_redshift_from_filename(xfrac)
 	if z < 0:
-		z = determine_redshift_from_filename(dens)
-	if z < 0:
-		raise Exception('No redshift specified. Could not determine from file.')
+		z = determine_redshift_from_filename(xfrac)
+		if z < 0:
+			z = determine_redshift_from_filename(dens)
+		if z < 0:
+			raise Exception('No redshift specified. Could not determine from file.')
+	
+	print_msg('Making dT box for z=%f' % z)
 	
 	#Calculate dT
 	return _dt(rho, xi, z)
