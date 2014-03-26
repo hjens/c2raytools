@@ -1,3 +1,10 @@
+'''
+c2raytools is a Python package for reading and 
+analyzing data files produced with C2Ray and CubeP3M.
+For documentation, see: http://ttt.astro.su.se/~hjens/c2raytools/
+'''
+
+
 #Import sub-modules 
 import conv
 from conv import set_sim_constants
