@@ -2,6 +2,11 @@
 c2raytools is a Python package for reading and 
 analyzing data files produced with C2Ray and CubeP3M.
 For documentation, see: http://ttt.astro.su.se/~hjens/c2raytools/
+You can also get documentation for all routines directory from
+the interpreter using Python's built-in help() function.
+For example:
+>>> import c2raytools as c2t
+>>> help(c2t.calc_dt)
 '''
 
 

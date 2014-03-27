@@ -98,7 +98,7 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, num_particles=10):
 			else:
 				distbox[i,j,:] = dist_slice
 
-	print_msg('Old dT (mean,var): %3f, %.3f' % ( dT.mean(), dT.var()) )
+	print_msg('Old dT (mean,var): %3f, %.3f' % ( dT.astype('float64').mean(), dT.var()) )
 	print_msg('New (mean,var): %.3f, %.3f' % (distbox.mean(), distbox.var()) )
 	return distbox
 

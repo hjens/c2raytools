@@ -66,15 +66,31 @@ def calc_dt_lightcone(xfrac, dens, lowest_z):
 	cdist = np.arange(xfrac.shape[los_axis])*cell_size + cdist_low
 	z = cosmology.cdist_to_z(cdist)
 	return _dt(dens, xfrac, z)
+
+
+def mean_dt(z):
+	'''
+	Get the mean dT at redshift z
+	
+	Parameters:
+		* z (float): the redshift
+		
+	Returns:
+		dT (float) the mean brightness temperature
+		in mK
+	'''
+	Ez = np.sqrt(const.Omega0*(1.0+z)**3+const.lam+\
+				(1.0-const.Omega0-const.lam)*(1.0+z)**2)
+
+	Cdt = const.meandt/const.h*(1.0+z)**2/Ez
+	
+	return Cdt
 	
 
 def _dt(rho, xi, z):
 	rho_mean = np.mean(rho)
 
-	Ez = np.sqrt(const.Omega0*(1.0+z)**3+const.lam+\
-				(1.0-const.Omega0-const.lam)*(1.0+z)**2)
-
-	Cdt = const.meandt/const.h*(1.0+z)**2/Ez
+	Cdt = mean_dt(z)
 	dt = Cdt*(1.0-xi)*rho/rho_mean
 	
 	return dt

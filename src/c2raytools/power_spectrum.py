@@ -297,6 +297,7 @@ def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None
 	print_msg('Binning data...')
 	outdata = np.zeros((n_mubins,n_kbins))
 	for ki in range(n_kbins):
+		print_msg('Bin %d of %d' % (ki, n_kbins))
 		kmin = kbins[ki]
 		kmax = kbins[ki+1]
 		kidx = (k >= kmin) * (k < kmax)
@@ -320,6 +321,7 @@ def _get_k(input_array, box_dims):
 	Return k components and magnitudes.
 	For internal use.
 	'''
+	print_msg('Calculating k values...')
 	dim = len(input_array.shape)
 	if dim == 2:
 		x,y = np.indices(input_array.shape)
@@ -345,6 +347,9 @@ def _get_mu(k_comp, k, los_axis):
 	a line-of-sight axis.
 	For internal use
 	'''
+	
+	print_msg('Calculating mu values...')
+	
 	#Line-of-sight distance from center 
 	if los_axis == 0:
 		los_dist = k_comp[0]
