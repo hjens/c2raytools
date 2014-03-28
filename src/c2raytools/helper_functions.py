@@ -5,6 +5,12 @@ from scipy.interpolate import interp1d
 import const
 import os
 
+try:
+	import numexpr as ne
+	numexpr_available = True
+except:
+	numexpr_available = False
+
 
 
 def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None):
@@ -368,6 +374,16 @@ def determine_redshift_from_filename(filename):
 		return -1
 		
 	return float(number_strs[longest_idx])
+
+
+def get_eval():
+	'''
+	Evaluate an expression using numexpr if
+	available. For internal use.
+	''' 
+	if numexpr_available:
+		return ne.evaluate
+	return eval
 			
 
 verbose = False

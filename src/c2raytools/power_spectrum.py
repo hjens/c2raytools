@@ -1,7 +1,7 @@
 import numpy as np
 import const
 import conv
-from helper_functions import print_msg
+from helper_functions import print_msg, get_eval
 from scipy import fftpack
 
 
@@ -300,11 +300,11 @@ def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None
 		print_msg('Bin %d of %d' % (ki, n_kbins))
 		kmin = kbins[ki]
 		kmax = kbins[ki+1]
-		kidx = (k >= kmin) * (k < kmax)
+		kidx = get_eval()('(k >= kmin) & (k < kmax)')
 		for i in range(n_mubins):
 			mu_min = mubins[i]
 			mu_max = mubins[i+1]
-			idx = (mu >= mu_min) * (mu < mu_max) * kidx
+			idx = get_eval()('(mu >= mu_min) & (mu < mu_max) & kidx')
 			outdata[i,ki] = np.mean(powerspectrum[idx])
 
 			if weights != None:
@@ -321,23 +321,23 @@ def _get_k(input_array, box_dims):
 	Return k components and magnitudes.
 	For internal use.
 	'''
-	print_msg('Calculating k values...')
 	dim = len(input_array.shape)
 	if dim == 2:
-		x,y = np.indices(input_array.shape)
+		x,y = np.indices(input_array.shape, dtype='int32')
 		center = np.array([(x.max()-x.min())/2, (y.max()-y.min())/2])
 		kx = 2.*np.pi * (x-center[0])/box_dims[0]
 		ky = 2.*np.pi * (y-center[1])/box_dims[1]
 		k = np.sqrt(kx**2 + ky**2)
 		return [kx, ky], k
 	elif dim == 3:
-		x,y,z = np.indices(input_array.shape)
+		x,y,z = np.indices(input_array.shape, dtype='int32')
 		center = np.array([(x.max()-x.min())/2, (y.max()-y.min())/2, \
 						(z.max()-z.min())/2])
 		kx = 2.*np.pi * (x-center[0])/box_dims[0]
 		ky = 2.*np.pi * (y-center[1])/box_dims[1]
 		kz = 2.*np.pi * (z-center[2])/box_dims[2]
-		k = np.sqrt(kx**2 + ky**2 + kz**2 ) 		
+
+		k = get_eval()('(kx**2 + ky**2 + kz**2 )**(1./2.)') 		
 		return [kx,ky,kz], k
 
 
@@ -347,9 +347,7 @@ def _get_mu(k_comp, k, los_axis):
 	a line-of-sight axis.
 	For internal use
 	'''
-	
-	print_msg('Calculating mu values...')
-	
+		
 	#Line-of-sight distance from center 
 	if los_axis == 0:
 		los_dist = k_comp[0]
