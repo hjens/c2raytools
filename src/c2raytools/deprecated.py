@@ -9,7 +9,7 @@ for compatibility reasons
 
 import numpy as np
 import os
-from freq_box import redshifts_at_equal_comoving_distance, _get_interp_slice
+from lightcone import redshifts_at_equal_comoving_distance, _get_interp_slice
 from xfrac_file import XfracFile
 from density_file import DensityFile
 from helper_functions import print_msg, get_dens_redshifts, get_mesh_size, \

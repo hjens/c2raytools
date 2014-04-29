@@ -153,10 +153,13 @@ def read_raw_binary(filename, bits=64, order='C'):
 	assert(bits ==32 or bits==64)
 
 	f = open(filename)
+	
+	print_msg('Reading raw binary file: %s' % filename)
 
 	datatype = np.float32 if bits == 32 else np.float64
 	data = np.fromfile(f, dtype=datatype)
 	n = round(len(data)**(1./3.))
+	print_msg('Mesh size appears to be: %d' % n)
 	data = data.reshape((n, n, n), order=order)
 	return data
 

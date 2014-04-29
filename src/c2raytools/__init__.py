@@ -22,7 +22,7 @@ from halo_list import *
 from statistics import *
 from power_spectrum import *
 from tau import *
-from freq_box import *
+from lightcone import *
 from misc import *
 from pv_mpm import *
 from temperature import *
