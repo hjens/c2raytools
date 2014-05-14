@@ -61,5 +61,5 @@ def tau(ionfractions, redshifts, num_points = 50):
 		(tau_z[i]-tau_z[i-1])/2
 
 
-		return tau0, tau_z
+	return tau0, tau_z
 
