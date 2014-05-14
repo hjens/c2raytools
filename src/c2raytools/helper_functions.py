@@ -4,6 +4,9 @@ import numpy as np
 from scipy.interpolate import interp1d
 import const
 import os
+import glob
+import os.path
+
 
 try:
 	import numexpr as ne
@@ -13,7 +16,7 @@ except:
 
 
 
-def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None):
+def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None, bracket=False):
 	''' 
 	Make a list of the redshifts of all the xfrac files in a directory.
 	
@@ -21,12 +24,12 @@ def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None):
 		* xfrac_dir (string): the directory to look in
 		* min_z = None (float): the minimum redshift to include (if given)
 		* max_z = None (float): the maximum redshift to include (if given)
+		* bracket = False (bool): if true, also include the redshifts on the
+			lower side of min_z and the higher side of max_z
 	 
 	Returns: 
 		The redhifts of the files (numpy array of floats) '''
 
-	import glob
-	import os.path
 	xfrac_files = glob.glob(os.path.join(xfrac_dir,'xfrac*.bin'))
 
 	redshifts = []
@@ -37,16 +40,10 @@ def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None):
 		except: 
 			pass
 
-	if min_z:
-		redshifts = filter(lambda x : x > min_z, redshifts)
-	if max_z:
-		redshifts = filter(lambda x : x < max_z, redshifts)
-	redshifts.sort()
-
-	return np.array(redshifts)
+	return _get_redshifts_in_range(redshifts, min_z, max_z, bracket)
 
 
-def get_dens_redshifts(dens_dir, min_z = None, max_z = None):
+def get_dens_redshifts(dens_dir, min_z = None, max_z = None, bracket=False):
 	''' 
 	Make a list of the redshifts of all the density files in a directory.
 	
@@ -54,12 +51,12 @@ def get_dens_redshifts(dens_dir, min_z = None, max_z = None):
 		* dens_dir (string): the directory to look in
 		* min_z = None (float): the minimum redshift to include (if given)
 		* max_z = None (float): the maximum redshift to include (if given)
+		* bracket = False (bool): if true, also include the redshifts on the
+			lower side of min_z and the higher side of max_z
 	 
 	Returns: 
 		The redhifts of the files (numpy array of floats) '''
 
-	import glob
-	import os.path
 	dens_files = glob.glob(os.path.join(dens_dir,'*n_all.dat'))
 
 	redshifts = []
@@ -69,12 +66,23 @@ def get_dens_redshifts(dens_dir, min_z = None, max_z = None):
 			redshifts.append(z)
 		except:
 			pass
-		
-	if min_z:
-		redshifts = filter(lambda x : x > min_z, redshifts)
-	if max_z:
-		redshifts = filter(lambda x : x < max_z, redshifts)
+	
+	return _get_redshifts_in_range(redshifts, min_z, max_z, bracket)
+
+
+def _get_redshifts_in_range(redshifts, min_z, max_z, bracket):
+	'''
+	Filter out redshifts outside of range. For internal use.
+	'''
+	redshifts = np.array(redshifts)
 	redshifts.sort()
+	if bracket:
+		if min_z < redshifts.min() or max_z > redshifts.max():
+			raise Exception('No redshifts to bracket range.')
+		min_z = redshifts[redshifts <= min_z][-1]
+		max_z = redshifts[redshifts >= max_z][0]
+	idx = (redshifts >= min_z)*(redshifts <= max_z)
+	redshifts = redshifts[idx]
 
 	return np.array(redshifts)
 

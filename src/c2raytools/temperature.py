@@ -37,21 +37,24 @@ def calc_dt(xfrac, dens, z = -1):
 	return _dt(rho, xi, z)
 	
 
-def calc_dt_lightcone(xfrac, dens, lowest_z):
+def calc_dt_lightcone(xfrac, dens, lowest_z, los_axis = 2):
 	'''
 	Calculate the differential brightness temperature assuming T_s >> T_CMB
 	for lightcone data.
 	
 	Parameters:
-		* xfrac (string): the name of the ionization fraction file (must be cbin)
-		* dens (string): the name of the density file (must be cbin)
+		* xfrac (string or numpy array): the name of the ionization 
+			fraction file (must be cbin), or the xfrac lightcone data
+		* dens (string or numpy array): the name of the density 
+			file (must be cbin), or the density data
 		* lowest_z (float): the lowest redshift of the lightcone volume
+		* los_axis = 2 (int): the line-of-sight axis
 		
 	Returns:
 		The differential brightness temperature as a numpy array with
 		the same dimensions as xfrac.
 	'''
-	los_axis = 2
+	
 	try:
 		xfrac = read_cbin(xfrac)
 	except Exception:
@@ -65,7 +68,6 @@ def calc_dt_lightcone(xfrac, dens, lowest_z):
 	cdist_low = cosmology.z_to_cdist(lowest_z)
 	cdist = np.arange(xfrac.shape[los_axis])*cell_size + cdist_low
 	z = cosmology.cdist_to_z(cdist)
-	print 'Inside dt lightcone. dens shape:', dens.shape, 'xfrac shape', xfrac.shape, 'z shape:', z.shape
 	return _dt(dens, xfrac, z)
 
 
@@ -89,7 +91,7 @@ def mean_dt(z):
 	
 
 def _dt(rho, xi, z):
-	rho_mean = np.mean(rho)
+	rho_mean = np.mean(rho.astype('float64'))
 
 	Cdt = mean_dt(z)
 	dt = Cdt*(1.0-xi)*rho/rho_mean
@@ -97,16 +99,3 @@ def _dt(rho, xi, z):
 	return dt
 	
 
-#---------TEST-----------
-if __name__ == '__main__':
-	import c2raytools as c2t
-	
-	base_path = '/disk/sn-12/garrelt/Science/Simulations/Reionization/C2Ray_WMAP5/114Mpc_WMAP5' 
-	density_filename = base_path+'/coarser_densities/nc256_halos_removed/8.515n_all.dat'
-	xfrac_filename = base_path + '/114Mpc_f2_10S_256/results_ranger/xfrac3d_8.515.bin'
-
-	c2t.set_verbose(True)
-	xfile = c2t.XfracFile(xfrac_filename)
-	dfile = c2t.DensityFile(density_filename)
-	dT = c2t.calc_dt(xfile, dfile)
-	
