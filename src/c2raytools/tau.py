@@ -41,16 +41,16 @@ def tau(ionfractions, redshifts, num_points = 50):
 	if len(ionfractions) != len(redshifts):
 		print 'Incorrect length of ionfractions'
 		raise Exception()
-	
+
 	sigma_T = 6.65e-25
 	chi1 = 1.0+const.abu_he
 	coeff = 2.0*(const.c*1e5)*sigma_T*const.OmegaB/const.Omega0*const.rho_crit_0*\
-		chi1/const.mean_molecular/const.m_p/(3.*const.H0cgs)
+	chi1/const.mean_molecular/const.m_p/(3.*const.H0cgs)
 
 	tau_z = np.hstack((np.arange(1,num_points+1)/float(num_points)*redshifts[0], redshifts))
 
 	tau0 = np.zeros(len(redshifts)+num_points)
-	
+
 	#Optical depth for a completely ionized Universe
 	tau0[0:num_points] = coeff*(np.sqrt(const.Omega0*(1+tau_z[0:num_points])**3+const.lam) - 1)
 
@@ -61,8 +61,5 @@ def tau(ionfractions, redshifts, num_points = 50):
 		(tau_z[i]-tau_z[i-1])/2
 
 
-	return tau0, tau_z
+		return tau0, tau_z
 
-	
-
-  
