@@ -81,6 +81,10 @@ def _get_redshifts_in_range(redshifts, min_z, max_z, bracket):
 			raise Exception('No redshifts to bracket range.')
 		min_z = redshifts[redshifts <= min_z][-1]
 		max_z = redshifts[redshifts >= max_z][0]
+	if min_z == None:
+		min_z = redshifts.min()-1
+	if max_z == None:
+		max_z = redshifts.max()+1
 	idx = (redshifts >= min_z)*(redshifts <= max_z)
 	redshifts = redshifts[idx]
 
