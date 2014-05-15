@@ -19,7 +19,7 @@ c2t.set_verbose(True)
 
 #We are using the 114/h Mpc simulation box, so set all the proper conversion factors
 #Always set this before loading data!
-c2t.conv.set_sim_constants(boxsize_cMpc = 114.)
+c2t.set_sim_constants(boxsize_cMpc = 114.)
 
 #We will make one density light cone, one for ionized
 #fraction and one for brightness temperature.
