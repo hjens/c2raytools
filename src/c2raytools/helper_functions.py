@@ -16,16 +16,16 @@ except:
 
 
 
-def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None, bracket=False):
+def get_xfrac_redshifts(xfrac_dir, z_low = None, z_high = None, bracket=False):
 	''' 
 	Make a list of the redshifts of all the xfrac files in a directory.
 	
 	Parameters:
 		* xfrac_dir (string): the directory to look in
-		* min_z = None (float): the minimum redshift to include (if given)
-		* max_z = None (float): the maximum redshift to include (if given)
+		* z_low = None (float): the minimum redshift to include (if given)
+		* z_high = None (float): the maximum redshift to include (if given)
 		* bracket = False (bool): if true, also include the redshifts on the
-			lower side of min_z and the higher side of max_z
+			lower side of z_low and the higher side of z_high
 	 
 	Returns: 
 		The redhifts of the files (numpy array of floats) '''
@@ -40,19 +40,19 @@ def get_xfrac_redshifts(xfrac_dir, min_z = None, max_z = None, bracket=False):
 		except: 
 			pass
 
-	return _get_redshifts_in_range(redshifts, min_z, max_z, bracket)
+	return _get_redshifts_in_range(redshifts, z_low, z_high, bracket)
 
 
-def get_dens_redshifts(dens_dir, min_z = None, max_z = None, bracket=False):
+def get_dens_redshifts(dens_dir, z_low=None, z_high=None, bracket=False):
 	''' 
 	Make a list of the redshifts of all the density files in a directory.
 	
 	Parameters:
 		* dens_dir (string): the directory to look in
-		* min_z = None (float): the minimum redshift to include (if given)
-		* max_z = None (float): the maximum redshift to include (if given)
+		* z_low = None (float): the minimum redshift to include (if given)
+		* z_high = None (float): the maximum redshift to include (if given)
 		* bracket = False (bool): if true, also include the redshifts on the
-			lower side of min_z and the higher side of max_z
+			lower side of z_low and the higher side of z_high
 	 
 	Returns: 
 		The redhifts of the files (numpy array of floats) '''
@@ -67,25 +67,25 @@ def get_dens_redshifts(dens_dir, min_z = None, max_z = None, bracket=False):
 		except:
 			pass
 	
-	return _get_redshifts_in_range(redshifts, min_z, max_z, bracket)
+	return _get_redshifts_in_range(redshifts, z_low, z_high, bracket)
 
 
-def _get_redshifts_in_range(redshifts, min_z, max_z, bracket):
+def _get_redshifts_in_range(redshifts, z_low, z_high, bracket):
 	'''
 	Filter out redshifts outside of range. For internal use.
 	'''
 	redshifts = np.array(redshifts)
 	redshifts.sort()
 	if bracket:
-		if min_z < redshifts.min() or max_z > redshifts.max():
+		if z_low < redshifts.min() or z_high > redshifts.max():
 			raise Exception('No redshifts to bracket range.')
-		min_z = redshifts[redshifts <= min_z][-1]
-		max_z = redshifts[redshifts >= max_z][0]
-	if min_z == None:
-		min_z = redshifts.min()-1
-	if max_z == None:
-		max_z = redshifts.max()+1
-	idx = (redshifts >= min_z)*(redshifts <= max_z)
+		z_low = redshifts[redshifts <= z_low][-1]
+		z_high = redshifts[redshifts >= z_high][0]
+	if z_low == None:
+		z_low = redshifts.min()-1
+	if z_high == None:
+		z_high = redshifts.max()+1
+	idx = (redshifts >= z_low)*(redshifts <= z_high)
 	redshifts = redshifts[idx]
 
 	return np.array(redshifts)
@@ -189,6 +189,7 @@ def save_cbin(filename, data, bits=32, order='C'):
 	Returns:
 		Nothing
 	'''
+	print_msg('Saving cbin file: %s' % filename)
 	assert(bits ==32 or bits==64)
 	f = open(filename, 'wb')
 	mesh = np.array(data.shape).astype('int32')
@@ -263,7 +264,7 @@ def determine_filetype(filename):
 	return 'unknown'
 
 
-def get_data_and_type(indata, cbin_bits=32, cbin_order='c'):
+def get_data_and_type(indata, cbin_bits=32, cbin_order='c', raw_density=False):
 	'''
 	Extract the actual data from an object (which may
 	be a file object or a filename to be read), and
@@ -273,6 +274,9 @@ def get_data_and_type(indata, cbin_bits=32, cbin_order='c'):
 		* indata (XfracFile, DensityFile, string or numpy array): the data
 		* cbin_bits (integer): the number of bits to use if indata is a cbin file
 		* cbin_order (string): the order of the data in indata if it's a cbin file
+		* raw_density (bool): if this is true, and the data is a 
+			density file, the raw (simulation units) density will be returned
+			instead of the density in cgs units
 		
 	Returns:
 		* A tuple with (outdata, type), where outdata is a numpy array 
@@ -287,7 +291,10 @@ def get_data_and_type(indata, cbin_bits=32, cbin_order='c'):
 	if isinstance(indata, c2raytools.xfrac_file.XfracFile):
 		return indata.xi, 'xfrac'
 	elif isinstance(indata, c2raytools.density_file.DensityFile):
-		return indata.cgs_density, 'density'
+		if raw_density:
+			return indata.raw_density, 'density'
+		else:
+			return indata.cgs_density, 'density'
 	elif isinstance(indata, str):
 		filetype = determine_filetype(indata)
 		if filetype == 'xfrac':

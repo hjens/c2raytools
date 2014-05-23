@@ -35,7 +35,8 @@ dfile = c2t.DensityFile(density_filename)
 #redshift, the mesh size and the actual density. 
 print 'The redshift is ', dfile.z
 print 'The size of the mesh is (', dfile.mesh_x, dfile.mesh_y, dfile.mesh_z, ')'
-print 'The mean density is ', dfile.cgs_density.mean(), ' g/cm^3'
+print 'The mean baryon density is ', dfile.cgs_density.mean(), ' g/cm^3'
+print 'The critical baryon density of the universe is: ', c2t.rho_crit_0*c2t.OmegaB, ' g/cm^3'
 
 #You can also access the density in simulation units
 print 'The raw density at point (0,0,0) is ', dfile.raw_density[0,0,0]

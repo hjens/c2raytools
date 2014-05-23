@@ -13,7 +13,7 @@ class DensityFile:
 	Some useful attributes of this class are:
 	
 	* raw_density (numpy array): the density in simulation units
-	* cgs_density (numpy array): the density in cgs units
+	* cgs_density (numpy array): the baryonic density in g/cm^3
 	* z (float): the redshift of the file (-1 if it couldn't be determined from the file name)
 	
 	'''
@@ -66,8 +66,8 @@ class DensityFile:
 		#Convert to g/cm^3 (comoving)
 		conv_factor = const.rho_crit_0*(float(self.mesh_x)/float(conv.nbox_fine))**3*const.OmegaB
 		self.cgs_density = self.raw_density*conv_factor
-		print_msg('Mean density: %g' % np.mean(self.cgs_density))
-		print_msg('Critical density: %g' % const.rho_crit_0)
+		print_msg('Mean density: %g' % np.mean(self.cgs_density.astype('float64')))
+		print_msg('Critical matter density: %g' % (const.rho_crit_0*const.OmegaB))
 
 		#Store the redshift from the filename
 		try:

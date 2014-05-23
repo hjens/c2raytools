@@ -63,6 +63,7 @@ def calc_dt_lightcone(xfrac, dens, lowest_z, los_axis = 2):
 		dens = read_cbin(dens)
 	except:
 		pass
+	dens = dens.astype('float64')
 		
 	cell_size = conv.LB/xfrac.shape[(los_axis+1)%3]
 	cdist_low = cosmology.z_to_cdist(lowest_z)
@@ -91,7 +92,8 @@ def mean_dt(z):
 	
 
 def _dt(rho, xi, z):
-	rho_mean = np.mean(rho.astype('float64'))
+		
+	rho_mean = const.rho_crit_0*const.OmegaB
 
 	Cdt = mean_dt(z)
 	dt = Cdt*(1.0-xi)*rho/rho_mean

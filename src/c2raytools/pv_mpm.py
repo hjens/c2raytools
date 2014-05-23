@@ -16,7 +16,8 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, velocity_axis = 0, num_particle
         * kms (numpy array): velocity in km/s, array of dimensions 
             (3,mx,my,mz) where (mx,my,mz) is dimensions of dT
         * redsh (float): the redshift
-        * los_axis = 0 (int): the line-of-sight axis (must be 0, 1 or 2)
+        * los_axis = 0 (int): the line-of-sight axis of the output volume
+            (must be 0, 1 or 2)
         * velocity_axis = 0 (int): the index that indicates los velocity
         * num_particles = 10 (int): the number of particles to use per cell
             A higher number gives better accuracy, but worse performance.
@@ -43,6 +44,14 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, velocity_axis = 0, num_particle
         the line-of-sight are equal. For example, if the box dimensions are
         (mx, my, mz) and the line-of-sight is along the z axis, then mx
         has to be equal to my.
+        
+    .. note::
+        If dT is a lightcone volume, los_axis is not necessarily the
+        same as velocity_axis. The lightcone volume methods in c2raytools
+        all give output volumes that have the line-of-sight as the last index,
+        regardless of the line-of-sight axis. For these volumes, you should
+        always use los_axis=2 and set velocity_axis equal to whatever was
+        used when producing the real-space lightcones.
     
     '''
     #Volume dimensions
@@ -70,7 +79,7 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, velocity_axis = 0, num_particle
     
     #Figure out the apparent position shift 
     vpar = kms[velocity_axis,:,:,:]
-    z_obs= (1+redsh)/(1.-vpar/const.c)-1.
+    z_obs = (1+redsh)/(1.-vpar/const.c)-1.
     dr = (1.+z_obs)*vpar/const.Hz(z_obs)
 
     #Make the distorted box
@@ -109,7 +118,7 @@ def get_distorted_dt(dT, kms, redsh, los_axis=0, velocity_axis = 0, num_particle
             #Regrid particles to original resolution
             dist_skewer = np.histogram(particle_pos, \
                                        bins=np.linspace(0, box_depth, grid_depth+1), \
-                                       weights = particle_dT)[0]
+                                       weights=particle_dT)[0]
             if los_axis == 0:
                 distbox[:,i,j] = dist_skewer
             elif los_axis == 1:
