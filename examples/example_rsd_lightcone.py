@@ -19,12 +19,12 @@ xfrac_dir = '/disk/dawn-1/garrelt/Reionization/C2Ray_WMAP5/425Mpc_WMAP5/f2_10S_5
 density_dir = '/disk/dawn-1/garrelt/Reionization/C2Ray_WMAP5/425Mpc_WMAP5/coarser_densities/'
 velocity_dir = density_dir
 
-#The place to save the results
+#The place to save the results. Modify to something you have write access to
 output_dir = '/home/hjens/links/local/slask/'
 
 #Redshift limits for the light cone
-z_low = 6.5
-z_high = 7. 
+z_low = 7.5
+z_high = 12. 
 
 #List all the redhifts for which we have data files
 density_redshifts = c2t.get_dens_redshifts(density_dir, z_low, z_high, bracket=True)
