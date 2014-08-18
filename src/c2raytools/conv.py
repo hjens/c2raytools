@@ -55,3 +55,43 @@ def set_sim_constants(boxsize_cMpc):
 	lscale = (LB)/float(nbox_fine)*const.Mpc # size of a cell in cm, comoving
 	tscale = 2.0/(3.0*np.sqrt(const.Omega0)*const.H0/const.Mpc*1.e5) # time scale, when divided by (1+z)2
 	velconvert = lambda z: lscale/tscale*(1.0+z)/1.e5
+
+
+def gridpos_to_mpc(gridpos):
+	'''
+	Convert a position or length in simulation grid units to Mpc
+	
+	Parameters:
+		* gridpos (float or numpy array): the position in simulation grid units
+		
+	Returns:
+		The position converted to Mpc with the origin unchanged
+	'''
+	return gridpos*lscale/const.Mpc
+
+
+def gridvel_to_kms(gridvel, z):
+	'''
+	Convert a velocity in simulation grid units to km/s
+	
+	Parameters:
+		* gridvel (float or numpy array): the velocity in simulation grid units
+		* z (float or numpy array): the redshift
+		
+	Returns:
+		The velocity in km/s
+	'''
+	return gridvel*velconvert(z)
+
+
+def gridmass_to_msol(grid_mass):
+	'''
+	Convert a halo mass from simulation grid units to solar masses
+	
+	Parameters:
+		* gridmass (float or numpy array): the mass in grid mass units
+		
+	Returns:
+		The mass in log10(Msol) 
+	'''
+	return np.log10(grid_mass*M_grid*const.solar_masses_per_gram)
