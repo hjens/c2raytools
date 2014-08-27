@@ -19,7 +19,7 @@ def skewness(x):
         n = np.size(x)
         xdiff = x-mx
         #return (sum(xdiff**3)/n)/((sum(xdiff**2)/n)**(3./2.)) #This is how SciPy does it
-   	return (np.sum(xdiff**3)/n)/((sum(xdiff**2)/(n-1))**(3./2.))
+   	return (np.sum(xdiff**3)/n)/((np.sum(xdiff**2)/(n-1))**(3./2.))
 
 
 def mass_weighted_mean_xi(xi, rho):
