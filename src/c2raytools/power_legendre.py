@@ -1,7 +1,7 @@
 
 import numpy as np
 from power_spectrum import _get_dims, power_spectrum_nd, _get_k,\
- _get_kbins, _get_mu
+ _get_kbins, _get_mu, get_eval
 
 def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
                                los_axis = 0):
@@ -53,7 +53,7 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
     outdata_P4 = np.zeros_like(outdata_P0) 
     
     for i in range(n_kbins):
-        idx = (k > kbins[i]) * (k <= kbins[i+1])
+        idx = get_eval()('(k > kbins[i]) & (k <= kbins[i+1])')
         outdata_P0[i] = np.sum(ps[idx]*P0[idx])/np.sum(P0[idx]**2)
         outdata_P2[i] = np.sum(ps[idx]*P2[idx])/np.sum(P2[idx]**2)
         outdata_P4[i] = np.sum(ps[idx]*P4[idx])/np.sum(P4[idx]**2)

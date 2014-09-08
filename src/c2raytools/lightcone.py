@@ -9,7 +9,7 @@ from density_file import DensityFile
 from vel_file import VelocityFile
 
 def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None, \
-                cbin_bits = 32, cbin_order = 'c', los_axis = 0, raw_density = False):
+                cbin_bits = 32, cbin_order = 'c', los_axis = 0, raw_density = False, interpolation='linear'):
     '''
     Make a lightcone from xfrac, density or dT data. Replaces freq_box.
     
@@ -44,6 +44,8 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
         * raw_density (bool): if this is true, and the data is a 
             density file, the raw (simulation units) density will be returned
             instead of the density in cgs units
+        * interpolation (string): can be 'linear' or 'nearest'. Determines
+            how slices in between output redshifts are interpolated.
     Returns:
         (lightcone, z) tuple
         
@@ -67,7 +69,8 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
     
     output_z = _get_output_z(file_redshifts, z_low, z_high, mesh_size[0])
 
-    lightcone = np.zeros((mesh_size[0], mesh_size[1], len(output_z)))
+    #Make the output 32-bit to save memory 
+    lightcone = np.zeros((mesh_size[0], mesh_size[1], len(output_z)), dtype='float32')
     
     comoving_pos_idx = 0
     z_bracket_low = None; z_bracket_high = None
@@ -96,7 +99,7 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
         
         #Make the slice by interpolating, then move to next index
         data_interp = _get_interp_slice(data_high, data_low, z_bracket_high, \
-                                    z_bracket_low, z, comoving_pos_idx, los_axis)
+                                    z_bracket_low, z, comoving_pos_idx, los_axis, interpolation)
         lightcone[:,:,comoving_pos_idx] = data_interp
         
         comoving_pos_idx += 1
@@ -251,15 +254,24 @@ def redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=256, \
     return np.array(z_array)
 
 
-def _get_interp_slice(data_high, data_low, z_bracket_high, z_bracket_low, z, comoving_pos_idx, los_axis):
+def _get_interp_slice(data_high, data_low, z_bracket_high, z_bracket_low, z, comoving_pos_idx, los_axis, interpolation):
     '''
     Interpolate between two data slices. For internal use.
     '''
     slice_ind = comoving_pos_idx % data_low.shape[1]
     slice_low = _get_slice(data_low, slice_ind, los_axis)
     slice_high = _get_slice(data_high, slice_ind, los_axis)
-    slice_interp = ((z-z_bracket_low)*slice_high + \
+    if interpolation == 'linear':
+        slice_interp = ((z-z_bracket_low)*slice_high + \
                     (z_bracket_high - z)*slice_low)/(z_bracket_high-z_bracket_low)
+    elif interpolation == 'nearest':
+        transition_z = (z_bracket_high-z_bracket_low)/2.
+        if z < transition_z:
+            slice_interp = slice_low.copy()
+        else:
+            slice_interp = slice_high.copy()
+    else:
+        raise Exception('Unknown interpolation method: %s' % interpolation)
     
     return slice_interp
 
