@@ -53,7 +53,9 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
     outdata_P4 = np.zeros_like(outdata_P0) 
     
     for i in range(n_kbins):
-        idx = get_eval()('(k > kbins[i]) & (k <= kbins[i+1])')
+        kmin = kbins[i]
+        kmax = kbins[i+1]
+        idx = get_eval()('(k >= kmin) & (k < kmax)')
         outdata_P0[i] = np.sum(ps[idx]*P0[idx])/np.sum(P0[idx]**2)
         outdata_P2[i] = np.sum(ps[idx]*P2[idx])/np.sum(P2[idx]**2)
         outdata_P4[i] = np.sum(ps[idx]*P4[idx])/np.sum(P4[idx]**2)
