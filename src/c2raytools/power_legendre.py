@@ -4,7 +4,7 @@ from power_spectrum import _get_dims, power_spectrum_nd, _get_k,\
  _get_kbins, _get_mu, get_eval
 
 def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
-                               los_axis = 0):
+                               los_axis = 0, output=['P0', 'P2', 'P4']):
     '''
     Calculate the power spectrum of an array and 
     expand it in the first three Legendre polynomials.
@@ -21,12 +21,16 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
             along all dimensions. If it is an array-like, the elements are
             taken as the box length along each axis.
         * los_axis = 0 (integer): the line-of-sight axis
+        * output = ['P0', 'P2', 'P4'] (list): the multipole moments to 
+            include in the output. For example, to get only the P2 moment,
+            pass in ['P2']
         
     Returns:
-        A tuple with (P0, P2, P4, k) where P0, P2 and P4
-        are the multipole moments as a function of k and
+        A tuple with (multipoles, k) where multipoles is a 
+        dictionary containing the multipoles (the keys are the
+        values passed to the output parameter) and
         k contains the midpoints of the k bins.
-        All four arrays have the same length
+        All arrays have the same dimension
     '''
     
     assert(los_axis >= 0 and los_axis <= len(input_array.shape))
@@ -42,26 +46,36 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
     mu = _get_mu(k_comp, k, los_axis)
     
     #Legendre polynomials
-    P0 = np.ones_like(mu)
-    P2 = 0.5*(3.*mu**2 - 1.)
-    P4 = 4.375*(mu**2-0.115587)*(mu**2-0.741556) 
+    if 'P0' in output:
+        P0 = np.ones_like(mu)
+    if 'P2' in output:
+        P2 = 0.5*(3.*mu**2 - 1.)
+    if 'P4' in output:
+        P4 = 4.375*(mu**2-0.115587)*(mu**2-0.741556) 
     
     #Bin data
     n_kbins = len(kbins)-1
-    outdata_P0 = np.zeros(n_kbins)
-    outdata_P2 = np.zeros_like(outdata_P0)
-    outdata_P4 = np.zeros_like(outdata_P0) 
+    multipoles = {}
+    if 'P0' in output:
+        multipoles['P0'] = np.zeros(n_kbins)
+    if 'P2' in output:
+        multipoles['P2'] = np.zeros(n_kbins)
+    if 'P4' in output:
+        multipoles['P4'] = np.zeros(n_kbins)
     
     for i in range(n_kbins):
         kmin = kbins[i]
         kmax = kbins[i+1]
         idx = get_eval()('(k >= kmin) & (k < kmax)')
-        outdata_P0[i] = np.sum(ps[idx]*P0[idx])/np.sum(P0[idx]**2)
-        outdata_P2[i] = np.sum(ps[idx]*P2[idx])/np.sum(P2[idx]**2)
-        outdata_P4[i] = np.sum(ps[idx]*P4[idx])/np.sum(P4[idx]**2)
+        if 'P0' in output:
+            multipoles['P0'][i] = np.sum(ps[idx]*P0[idx])/np.sum(P0[idx]**2)
+        if 'P2' in output:
+            multipoles['P2'][i] = np.sum(ps[idx]*P2[idx])/np.sum(P2[idx]**2)
+        if 'P4' in output:
+            multipoles['P4'][i] = np.sum(ps[idx]*P4[idx])/np.sum(P4[idx]**2)
         
     
-    return outdata_P0, outdata_P2, outdata_P4, kbins[:-1]+dk
+    return multipoles, kbins[:-1]+dk
 
 
     
