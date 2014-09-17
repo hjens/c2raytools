@@ -6,7 +6,6 @@ import const
 import os
 import glob
 import os.path
-import scipy.ndimage as ndimage
 
 try:
 	import numexpr as ne
@@ -406,38 +405,6 @@ def get_eval():
 	if numexpr_available:
 		return ne.evaluate
 	return eval
-
-
-def interpolate3d(input_array, x, y, z, order=0):
-	'''
-	This function is a recreation of IDL's interpolate
-	routine. It takes an input array, and interpolates it
-	to a new size, which can be irregularly spaced.
-	
-	Parameters:
-		* input_array (numpy array): the array to interpolate
-		* x (numpy array): the output coordinates along the x axis
-			expressed as (fractional) indices 
-		* y (numpy array): the output coordinates along the y axis
-			expressed as (fractional) indices 
-		* z (numpy array): the output coordinates along the z axis
-			expressed as (fractional) indices
-		* order (int): the order of the spline interpolation. Default
-			is 0 (linear interpolation). 
-
-	Returns:
-		Interpolated array with shape (nx, ny, nz), where nx, ny and nz
-		are the lengths of the arrays x, y and z respectively.
-	'''
-	
-	
-	inds = np.zeros((3, len(x), len(y), len(z)))
-	inds[0,:,:] = x[:,np.newaxis,np.newaxis]
-	inds[1,:,:] = y[np.newaxis,:,np.newaxis]
-	inds[2,:,:] = z[np.newaxis,np.newaxis,:]
-	new_array = ndimage.map_coordinates(input_array, inds, mode='wrap', order=0)
-	
-	return new_array
 			
 
 verbose = False

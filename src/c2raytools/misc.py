@@ -1,5 +1,7 @@
 import numpy as np
 import const
+import scipy.ndimage as ndimage
+
 
 def gauss_kern(size, sizey = None, sigma=1.0):
 	''' 
@@ -25,10 +27,10 @@ def gauss_kern(size, sizey = None, sigma=1.0):
 		sizey = int(sizey/2)
 
 	x,y = np.mgrid[-size:size, -sizey:sizey]
-	#g = exp(-(x**2/float(size) + y**2/float(sizey))/sigma**2)
 	g = np.exp(-(x**2 + y**2)/sigma**2)
 
 	return g/g.sum()
+
 
 def smooth(input_array, sigma):
 	''' 
@@ -57,6 +59,7 @@ def smooth(input_array, sigma):
 
 	return out[ox*0.25:ox*0.75, ox*0.25:ox*0.75]
 
+
 def get_beam_w(baseline, z):
 	'''
 	Calculate the width of the beam for an
@@ -76,3 +79,35 @@ def get_beam_w(baseline, z):
 	lw = const.c/fr/1.e6*1.e3 # wavelength in m
 	beam_w = lw/baseline/np.pi*180.*60.
 	return beam_w
+
+
+def interpolate3d(input_array, x, y, z, order=0):
+	'''
+	This function is a recreation of IDL's interpolate
+	routine. It takes an input array, and interpolates it
+	to a new size, which can be irregularly spaced.
+	
+	Parameters:
+		* input_array (numpy array): the array to interpolate
+		* x (numpy array): the output coordinates along the x axis
+			expressed as (fractional) indices 
+		* y (numpy array): the output coordinates along the y axis
+			expressed as (fractional) indices 
+		* z (numpy array): the output coordinates along the z axis
+			expressed as (fractional) indices
+		* order (int): the order of the spline interpolation. Default
+			is 0 (linear interpolation). 
+
+	Returns:
+		Interpolated array with shape (nx, ny, nz), where nx, ny and nz
+		are the lengths of the arrays x, y and z respectively.
+	'''
+	
+	
+	inds = np.zeros((3, len(x), len(y), len(z)))
+	inds[0,:,:] = x[:,np.newaxis,np.newaxis]
+	inds[1,:,:] = y[np.newaxis,:,np.newaxis]
+	inds[2,:,:] = z[np.newaxis,np.newaxis,:]
+	new_array = ndimage.map_coordinates(input_array, inds, mode='wrap', order=0)
+	
+	return new_array
