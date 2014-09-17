@@ -108,6 +108,6 @@ def interpolate3d(input_array, x, y, z, order=0):
 	inds[0,:,:] = x[:,np.newaxis,np.newaxis]
 	inds[1,:,:] = y[np.newaxis,:,np.newaxis]
 	inds[2,:,:] = z[np.newaxis,np.newaxis,:]
-	new_array = ndimage.map_coordinates(input_array, inds, mode='wrap', order=0)
+	new_array = ndimage.map_coordinates(input_array, inds, mode='wrap', order=order)
 	
 	return new_array
