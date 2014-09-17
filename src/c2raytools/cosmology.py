@@ -162,6 +162,25 @@ def angular_size(dl, z):
     return outputify(angle)
 
 
+def angular_size_comoving(cMpc, z):
+    '''
+    Calculate the angular size in degrees of an object with a given
+    comoving size.
+    
+    Parameters:
+        * cMpc (float or array): the size in comoving Mpc
+        * z (float or array): the redshift of the object
+        
+    Returns:
+        The angular size in degrees
+    '''
+    
+    pkpc = c_to_p(cMpc, z)*1000.
+    arcsec = angular_size(pkpc, z)
+    return arcsec/60./60.
+
+
+
 def nu_to_z(nu21):
     ''' Convert 21 cm frequency in MHz to redshift 
 
