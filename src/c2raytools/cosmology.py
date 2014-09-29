@@ -120,8 +120,11 @@ def z_to_cdist(z):
     Returns:
         Comoving distance in Mpc
     '''
-    Ez_func = lambda x: 1./np.sqrt(const.Omega0*(1.+x)**3+const.lam)
-    dist = const.c/const.H0 * quadrature(Ez_func, 0, z)[0]
+    z = np.atleast_1d(z)
+    dist = np.zeros_like(z)
+    for i in range(len(z)):
+        Ez_func = lambda x: 1./np.sqrt(const.Omega0*(1.+x)**3+const.lam)
+        dist[i] = const.c/const.H0 * quadrature(Ez_func, 0, z[i])[0]
     return outputify(dist)
 
 

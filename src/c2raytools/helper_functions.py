@@ -397,6 +397,49 @@ def determine_redshift_from_filename(filename):
 	return float(number_strs[longest_idx])
 
 
+def find_idx(ar, values):
+	'''
+	Find the (fractional) indices of values in an array.
+	If values contains values outside of the range of ar,
+	these will be clamped to the bounds of ar.
+	
+	Parameters:
+		* ar (numpy array): the array to search through
+		* values (numpy array or float): the value(s) to look for
+		
+	Returns:
+		The indices of the values. Can be in-between integer indices
+	'''
+	
+	#Make input into an array and clamp outliers
+	values = np.atleast_1d(values)
+	values[values > ar.max()] = ar.max()
+	values[values < ar.min()] = ar.min()
+	
+	#Make sure that the values are monotonically increasing/decreasing
+	dv = ar[1:]-ar[:-1]
+	if (not np.all(dv >= 0.)) and (not np.all(dv <= 0.)):
+		raise ValueError('Array must be monotonically increasing or decreasing')
+	
+	#If decreasing, reverse
+	if np.all(dv <= 0.):
+		ar = ar[::-1]
+		decreasing = True
+	else:
+		decreasing = False
+	
+	#Calculate indices
+	integer_part = np.searchsorted(ar, values)-1
+	x1 = ar[integer_part]
+	x2 = ar[integer_part+1]
+	fractional_part = (values-x1)/(x2-x1)
+	out = integer_part+fractional_part
+	if decreasing:
+		out = len(ar)-1-out
+	
+	return outputify(out)
+
+
 def get_eval():
 	'''
 	Evaluate an expression using numexpr if

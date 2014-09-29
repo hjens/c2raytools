@@ -31,6 +31,7 @@ from cosmology import *
 from plotting import *
 from power_legendre import *
 from deprecated import *
+from angular_coordinates import *
 
 #Suppress warnings from zero-divisions and nans
 import numpy

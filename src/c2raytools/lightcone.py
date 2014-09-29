@@ -44,7 +44,7 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
         * raw_density (bool): if this is true, and the data is a 
             density file, the raw (simulation units) density will be returned
             instead of the density in cgs units
-        * interpolation (string): can be 'linear' or 'nearest'. Determines
+        * interpolation (string): can be 'linear' or 'step'. Determines
             how slices in between output redshifts are interpolated.
     Returns:
         (lightcone, z) tuple
@@ -60,6 +60,9 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
         give results that are subtly different from results calculated with
         the old freq_box routine.
     '''
+    
+    if interpolation != 'linear' and interpolation != 'step':
+        raise ValueError('Unknown interpolation type: %s' % interpolation)
     
     #Figure out output redshifts, file names and size of output
     filenames = _get_filenames(filenames)
@@ -218,7 +221,7 @@ def _get_output_z(file_redshifts, z_low, z_high, box_grid_n):
 
 
 def redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=256, \
-            box_length_mpc = None):
+            box_length_mpc=None):
     ''' 
     Make a frequency axis vector with equal spacing in co-moving LOS coordinates. 
     The comoving distance between each frequency will be the same as the cell
@@ -244,11 +247,8 @@ def redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=256, \
 
     while z < z_high:
         z_array.append(z)
-
         nu = const.nu0/(1.0+z)
-
         dnu = const.nu0*const.Hz(z)*box_length_mpc/(1.0 + z)**2/const.c/float(box_grid_n)
-
         z = const.nu0/(nu - dnu) - 1.0
 
     return np.array(z_array)
@@ -264,7 +264,7 @@ def _get_interp_slice(data_high, data_low, z_bracket_high, z_bracket_low, z, com
     if interpolation == 'linear':
         slice_interp = ((z-z_bracket_low)*slice_high + \
                     (z_bracket_high - z)*slice_low)/(z_bracket_high-z_bracket_low)
-    elif interpolation == 'nearest':
+    elif interpolation == 'step':
         transition_z = (z_bracket_high-z_bracket_low)/2.
         if z < transition_z:
             slice_interp = slice_low.copy()
