@@ -254,7 +254,8 @@ def redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=256, \
     return np.array(z_array)
 
 
-def _get_interp_slice(data_high, data_low, z_bracket_high, z_bracket_low, z, comoving_pos_idx, los_axis, interpolation):
+def _get_interp_slice(data_high, data_low, z_bracket_high, z_bracket_low, z, \
+                      comoving_pos_idx, los_axis, interpolation='linear'):
     '''
     Interpolate between two data slices. For internal use.
     '''
