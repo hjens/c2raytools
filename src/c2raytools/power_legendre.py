@@ -1,10 +1,10 @@
 
 import numpy as np
 from power_spectrum import _get_dims, power_spectrum_nd, _get_k,\
- _get_kbins, _get_mu, get_eval
+ _get_kbins, _get_mu, get_eval, _get_nonzero_idx
 
 def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
-                               los_axis = 0, output=['P0', 'P2', 'P4']):
+                               los_axis = 0, output=['P0', 'P2', 'P4'], exclude_zero_modes=False):
     '''
     Calculate the power spectrum of an array and 
     expand it in the first three Legendre polynomials.
@@ -24,7 +24,9 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
         * output = ['P0', 'P2', 'P4'] (list): the multipole moments to 
             include in the output. For example, to get only the P2 moment,
             pass in ['P2']
-        
+        * exlude_zero_modes = True (bool): if true, modes with any components
+            of k equal to zero will be excluded.
+
     Returns:
         A tuple with (multipoles, k) where multipoles is a 
         dictionary containing the multipoles (the keys are the
@@ -45,6 +47,12 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
     dk = (kbins[1:]-kbins[:-1])/2.
     mu = _get_mu(k_comp, k, los_axis)
     
+    #Exclude k_perp = 0 modes
+    if exclude_zero_modes:
+        good_idx = _get_nonzero_idx(ps.shape, los_axis)
+    else:
+        good_idx = np.ones_like(ps)
+
     #Legendre polynomials
     if 'P0' in output:
         P0 = np.ones_like(mu)
@@ -67,6 +75,7 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
         kmin = kbins[i]
         kmax = kbins[i+1]
         idx = get_eval()('(k >= kmin) & (k < kmax)')
+        idx *= good_idx
         if 'P0' in output:
             multipoles['P0'][i] = np.sum(ps[idx]*P0[idx])/np.sum(P0[idx]**2)
         if 'P2' in output:

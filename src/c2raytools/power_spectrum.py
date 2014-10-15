@@ -257,8 +257,8 @@ def cross_power_spectrum_mu(input_array1, input_array2, los_axis = 0, mubins=20,
 	return mu_binning(powerspectrum, los_axis, mubins, kbins, box_dims, weights, exclude_zero_modes)
 
 
-def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None, weights=None,
-			exclude_zero_modes = True):
+def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims=None, weights=None,
+			exclude_zero_modes=True):
 	'''
 	This function is for internal use only.
 	'''
@@ -274,15 +274,14 @@ def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None
 
 	#Calculate k values, and make k bins
 	kbins = _get_kbins(kbins, box_dims, k)
-
 	dk = (kbins[1:]-kbins[:-1])/2.
 	n_kbins = len(kbins)-1
-
-	#Exclude the k_x = 0, k_y = 0, k_z = 0 modes
+		
+	#Exclude k_perp = 0 modes
 	if exclude_zero_modes:
-		x,y,z = np.indices(powerspectrum.shape)
-		zero_ind = (x == k.shape[0]/2) + (y == k.shape[1]/2) + (z == k.shape[2]/2)
-		powerspectrum[zero_ind] = 0.
+		good_idx = _get_nonzero_idx(powerspectrum.shape, los_axis)
+	else:
+		good_idx = np.ones_like(powerspectrum)
 
 	#Make mu bins
 	if isinstance(mubins,int):
@@ -301,6 +300,7 @@ def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims = None
 		kmin = kbins[ki]
 		kmax = kbins[ki+1]
 		kidx = get_eval()('(k >= kmin) & (k < kmax)')
+		kidx *= good_idx
 		for i in range(n_mubins):
 			mu_min = mubins[i]
 			mu_max = mubins[i+1]
@@ -389,3 +389,19 @@ def _get_dims(box_dims, ashape):
 	if not hasattr(box_dims, '__iter__'):
 		return [box_dims]*len(ashape)
 	return box_dims
+
+
+def _get_nonzero_idx(ps_shape, los_axis):
+	'''
+	Get the indices where k_perp != 0
+	'''
+	x,y,z = np.indices(ps_shape)
+	if los_axis == 0:
+		zero_idx = (y == ps_shape[1]/2)*(z == ps_shape[2]/2)
+	elif los_axis == 1:
+		zero_idx = (x == ps_shape[0]/2)*(z == ps_shape[2]/2)
+	else:
+		zero_idx = (x == ps_shape[0]/2)*(y == ps_shape[1]/2)
+	good_idx = np.invert(zero_idx)
+	return good_idx
+

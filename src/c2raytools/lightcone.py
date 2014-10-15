@@ -44,7 +44,7 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
         * raw_density (bool): if this is true, and the data is a 
             density file, the raw (simulation units) density will be returned
             instead of the density in cgs units
-        * interpolation (string): can be 'linear' or 'step'. Determines
+        * interpolation (string): can be 'linear', 'step' or 'sigmoid'. Determines
             how slices in between output redshifts are interpolated.
     Returns:
         (lightcone, z) tuple
@@ -61,7 +61,7 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
         the old freq_box routine.
     '''
     
-    if interpolation != 'linear' and interpolation != 'step':
+    if not interpolation in ['linear', 'step', 'sigmoid']:
         raise ValueError('Unknown interpolation type: %s' % interpolation)
     
     #Figure out output redshifts, file names and size of output
@@ -271,31 +271,39 @@ def _get_interp_slice(data_high, data_low, z_bracket_high, z_bracket_low, z, \
             slice_interp = slice_low.copy()
         else:
             slice_interp = slice_high.copy()
+    elif interpolation == 'sigmoid':
+        zp = -10. + 20.*(z-z_bracket_low)/(z_bracket_high-z_bracket_low)
+        beta = 2.
+        g = 1./(1.+np.exp(-beta*zp))
+        slice_interp = slice_low*(1.-g) + slice_high*g
     else:
         raise Exception('Unknown interpolation method: %s' % interpolation)
     
     return slice_interp
 
 
-def _get_slice(data, idx, los_axis):
+def _get_slice(data, idx, los_axis, slice_depth=1):
     '''
     Slice a data cube along a given axis. For internal use.
     '''
-    assert(len(data.shape) == 3 or len(data.shape) == 4)
-    assert(los_axis >= 0 and los_axis < 3)
+    assert len(data.shape) == 3 or len(data.shape) == 4
+    assert los_axis >= 0 and los_axis < 3
+    
+    idx1 = idx
+    idx2 = idx1+slice_depth
 
     if len(data.shape) == 3: #scalar field
         if los_axis == 0:
-            return data[idx,:,:]
+            return np.squeeze(data[idx1:idx2,:,:])
         elif los_axis == 1:
-            return data[:,idx,:]
-        return data[:,:,idx]
+            return np.squeeze(data[:,idx1:idx2,:])
+        return np.squeeze(data[:,:,idx1:idx2])
     else: #Vector field
         if los_axis == 0:
-            return data[:,idx,:,:]
+            return np.squeeze(data[:,idx1:idx2,:,:])
         elif los_axis == 1:
-            return data[:,:,idx,:]
-        return data[:,:,:,idx]
+            return np.squeeze(data[:,:,idx1:idx2,:])
+        return np.squeeze(data[:,:,:,idx1:idx2])
     
     
     
