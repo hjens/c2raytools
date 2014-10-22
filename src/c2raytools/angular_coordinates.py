@@ -122,7 +122,8 @@ def observational_lightcone_to_physical(observational_lightcone, input_nu_low, \
                                         input_dnu, input_dtheta, interp_order=2):
     '''
     Convert a lightcone in observational (angle, frequency) units
-    to physical units (Mpc). The LOS axis must be the last index.
+    to physical units (Mpc). The LOS axis must be the last index, with frequency
+    decreasing along the LOS.
     
     Parameters:
         * observational_lightcone (numpy array): the input data with units
@@ -143,7 +144,8 @@ def observational_lightcone_to_physical(observational_lightcone, input_nu_low, \
     n_input_theta = observational_lightcone.shape[1] 
 
     #Frequencies and redshifts of input data
-    input_frequencies = np.arange(n_input_freqs)*input_dnu + input_nu_low
+    input_nu_high = input_nu_low + n_input_freqs*input_dnu
+    input_frequencies = input_nu_high - np.arange(n_input_freqs)*input_dnu
     input_redshifts = cm.nu_to_z(input_frequencies)
 
     input_fov = n_input_theta*input_dtheta 
@@ -157,8 +159,8 @@ def observational_lightcone_to_physical(observational_lightcone, input_nu_low, \
     input_fov_mpc = np.deg2rad(input_fov/60.)*input_lumdist/(1.+input_redshifts)
 
     #Find the comoving size at low and high frequency ends
-    fov_mpc_low = input_fov_mpc[0]
-    fov_mpc_high = input_fov_mpc[n_input_freqs-1]
+    fov_mpc_low = input_fov_mpc[-1]
+    fov_mpc_high = input_fov_mpc[0]
 
     #Set comoving size to the one at high frequency
     output_mpc_perp = fov_mpc_high
@@ -198,8 +200,8 @@ def observational_lightcone_to_physical(observational_lightcone, input_nu_low, \
 
     #Create the regularized comoving los axis
     output_cell_position_los = np.linspace(0., output_depth_mpc, n_output_cells_los)
-    start_distance = cm.z_to_cdist(input_redshifts[-1])
-    output_z = cm.cdist_to_z(start_distance+output_cell_position_los)[::-1]
+    start_distance = cm.z_to_cdist(input_redshifts[0])
+    output_z = cm.cdist_to_z(start_distance+output_cell_position_los)
 
     #Set the comoving physical distance array (perpendicular direction)
     output_cell_position_perp = np.linspace(0., output_mpc_perp, n_output_cells_perp) 
