@@ -4,9 +4,11 @@ import numpy as np
 import os
 import glob
 from helper_functions import get_mesh_size, \
-    determine_redshift_from_filename, get_data_and_type, print_msg
+    determine_redshift_from_filename, get_data_and_type, print_msg, find_idx
 from density_file import DensityFile
 from vel_file import VelocityFile
+import cosmology as cm
+import statistics as st
 
 def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None, \
                 cbin_bits = 32, cbin_order = 'c', los_axis = 0, raw_density = False, interpolation='linear'):
@@ -254,6 +256,46 @@ def redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=256, \
     return np.array(z_array)
 
 
+def get_lightcone_subvolume(lightcone, redshifts, central_z, \
+                            depth_mhz=None, odd_num_cells=True, \
+                            subtract_mean=True):
+    '''
+    Extract a subvolume from a lightcone, at a given central redshift,
+    and with a given depth. 
+    
+    Parameters:
+        * ligthcone (numpy array): the lightcone
+        * redshifts (numpy array): the redshifts along the LOS
+        * central_z (float): the central redshift of the subvolume
+        * depth_mhz (float): the depth of the subvolume in MHz
+        * odd_num_cells (bool): if true, the depth of the box will always 
+                be an odd number of cells. This avoids problems with 
+                power spectrum calculations.
+        * subtract_mean (bool): if true, subtract the mean of the signal
+        
+    Returns:
+        Tuple with (subvolume, dims) where dims is a tuple
+        with the dimensions of the subvolume in Mpc
+    '''
+        
+    central_nu = cm.z_to_nu(central_z)
+    low_z = cm.nu_to_z(central_nu+depth_mhz/2.)
+    high_z = cm.nu_to_z(central_nu-depth_mhz/2.)
+    low_n = int(find_idx(redshifts, low_z))
+    high_n = int(find_idx(redshifts, high_z))
+    
+    if (high_n-low_n) % 2 == 0 and odd_num_cells:
+        high_n += 1
+    
+    subbox = lightcone[:,:,low_n:high_n]
+    if subtract_mean:
+        subbox = st.subtract_mean_signal(subbox, los_axis=2)
+    box_depth = float(high_n-low_n)/lightcone.shape[1]*conv.LB
+    box_dims = (conv.LB, conv.LB, box_depth)
+    
+    return subbox, box_dims
+
+
 def _get_interp_slice(data_high, data_low, z_bracket_high, z_bracket_low, z, \
                       comoving_pos_idx, los_axis, interpolation='linear'):
     '''
@@ -304,7 +346,6 @@ def _get_slice(data, idx, los_axis, slice_depth=1):
         elif los_axis == 1:
             return np.squeeze(data[:,:,idx1:idx2,:])
         return np.squeeze(data[:,:,:,idx1:idx2])
-    
     
     
 def _get_filenames(filenames_in):

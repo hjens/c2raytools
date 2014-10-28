@@ -24,6 +24,10 @@ def physical_lightcone_to_observational(physical_lightcone, data_z_low, \
     same all along the LOS axis. This means that periodic boundary conditions
     are not preserved. The LOS axis must be the last index.
     
+    Note! Due to an issue with scipy.map_coordinates, this 
+    method will give erroneous results for large arrays. Always check
+    that results look reasonable.
+    
     Parameters:
         * physical_lightcone (numpy array): the lightcone in physical units
         * data_z_low (float): the lowest redshift of the lightcone
@@ -43,7 +47,7 @@ def physical_lightcone_to_observational(physical_lightcone, data_z_low, \
     #Depth of the lightcone
     nb = float(physical_lightcone.shape[2])/float(physical_lightcone.shape[1])
     mx = physical_lightcone.shape[1] #Grid size along perp axis
-    n_cells_los = nb*mx 
+    n_cells_los = physical_lightcone.shape[2] 
     if data_box_width == None:
         data_box_width = conv.LB
 
@@ -106,8 +110,17 @@ def physical_lightcone_to_observational(physical_lightcone, data_z_low, \
     output_frequencies = np.arange(new_box_length)/float(new_box_length-1) *\
         (lc_frequencies[idx_low_nu]-lc_frequencies[idx_high_nu])+lc_frequencies[idx_high_nu]
     ifr = hf.find_idx(lc_frequencies, output_frequencies)
+    print 'output_frequencies', output_frequencies
+    print 'lc_frequencies', lc_frequencies
+    print 'idx_high_nu', idx_high_nu
+    print 'idx_low_nu', idx_low_nu
+    print 'ifr', ifr
+    print 'len output_frequencies', len(output_frequencies)
+    print 'theta_lightcone shape', theta_lightcone.shape
+    print 'len lc_frequencies', len(lc_frequencies)
+
     output_lightcone = misc.interpolate3d(theta_lightcone, np.arange(nx), \
-                                  np.arange(nx), ifr, order=interp_order)
+                                  np.arange(nx), ifr, order=interp_order)    
 
     #Regrid to required resolution: dnu MHz, dtheta arcmin
     nfr = round((lc_frequencies[idx_high_nu]-lc_frequencies[idx_low_nu])/output_dnu)
