@@ -6,6 +6,7 @@ import const
 import os
 import glob
 import os.path
+import time
 
 try:
 	import numexpr as ne
@@ -90,9 +91,12 @@ def _get_redshifts_in_range(redshifts, z_low, z_high, bracket):
 	return np.array(redshifts)
 
 
-def print_msg(message):
-	''' Print a message of verbose is true '''
+def print_msg(message, print_time=True):
+	''' Print a message if verbose is true '''
 	if verbose:
+		if print_time:
+			timestr = time.strftime('%Y/%m/%d %H:%M:%S')
+			message = '%s --- %s' % (timestr, message)
 		print message
 		
 
