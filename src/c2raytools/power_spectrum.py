@@ -5,7 +5,7 @@ from helper_functions import print_msg, get_eval
 from scipy import fftpack
 
 
-def power_spectrum_nd(input_array, box_dims = None):
+def power_spectrum_nd(input_array, box_dims=None):
 	''' 
 	Calculate the power spectrum of input_array and return it as an n-dimensional array,
 	where n is the number of dimensions in input_array
@@ -22,10 +22,7 @@ def power_spectrum_nd(input_array, box_dims = None):
 			taken as the box length along each axis.
 	
 	Returns:
-		The power spectrum in the same dimensions as the input array.
-		
-	TODO:
-		Also return k values.
+		The power spectrum in the same dimensions as the input array.		
 	'''
 
 	box_dims = _get_dims(box_dims, input_array.shape)
@@ -39,7 +36,7 @@ def power_spectrum_nd(input_array, box_dims = None):
 	boxvol = np.product(map(float,box_dims))
 	pixelsize = boxvol/(np.product(input_array.shape))
 	power_spectrum *= pixelsize**2/boxvol
-
+	
 	return power_spectrum
 
 
@@ -103,8 +100,9 @@ def radial_average(input_array, box_dims, kbins=10):
 			are logarithmically spaced.
 			
 	Returns:
-		A tuple with (data, bins), where data is an array with the 
-		averaged data and bins is an array with the bin centers.
+		A tuple with (data, bins, n_modes), where data is an array with the 
+		averaged data, bins is an array with the bin centers and n_modes is the 
+		number of modes in each bin
 
 	'''
 
@@ -119,13 +117,13 @@ def radial_average(input_array, box_dims, kbins=10):
 	outdata = np.histogram(k.flatten(), bins=kbins,
 						weights = input_array.flatten())[0]
 	#Number of modes in each bin
-	n = np.histogram(k.flatten(), bins=kbins)[0].astype('float')
-	outdata /= n
+	n_modes = np.histogram(k.flatten(), bins=kbins)[0].astype('float')
+	outdata /= n_modes
 	
-	return outdata, kbins[:-1]+dk
+	return outdata, kbins[:-1]+dk, n_modes
 	
 
-def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None):
+def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None, return_n_modes=False):
 	''' Calculate the spherically averaged power spectrum of an array 
 	and return it as a one-dimensional array.
 	
@@ -139,6 +137,8 @@ def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None):
 			dimensions. If it is a float, this is taken as the box length
 			along all dimensions. If it is an array-like, the elements are
 			taken as the box length along each axis.
+		* return_n_modes = False (bool): if true, also return the
+			number of modes in each bin
 			
 	Returns: 
 		A tuple with (Pk, bins), where Pk is an array with the 
@@ -149,10 +149,13 @@ def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None):
 
 	input_array = power_spectrum_nd(input_array_nd, box_dims=box_dims)	
 
-	return radial_average(input_array, kbins=kbins, box_dims=box_dims)
+	ps, bins, n_modes = radial_average(input_array, kbins=kbins, box_dims=box_dims)
+	if return_n_modes:
+		return ps, bins, n_modes
+	return ps, bins
 
 
-def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dims=None):
+def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dims=None, return_n_modes=False):
 	''' Calculate the spherically averaged cross power spectrum of two arrays 
 	and return it as a one-dimensional array.
 	
@@ -167,6 +170,8 @@ def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dim
 			dimensions. If it is a float, this is taken as the box length
 			along all dimensions. If it is an array-like, the elements are
 			taken as the box length along each axis.
+		* return_n_modes = False (bool): if true, also return the
+			number of modes in each bin
 			
 	Returns: 
 		A tuple with (Pk, bins), where Pk is an array with the 
@@ -177,7 +182,10 @@ def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dim
 
 	input_array = cross_power_spectrum_nd(input_array1_nd, input_array2_nd, box_dims=box_dims)	
 
-	return radial_average(input_array, kbins=kbins, box_dims = box_dims)
+	ps, bins, n_modes = radial_average(input_array, kbins=kbins, box_dims = box_dims)
+	if return_n_modes:
+		return ps, bins, n_modes
+	return ps, bins
 
 
 def power_spectrum_mu(input_array, los_axis = 0, mubins=20, kbins=10, box_dims = None, weights=None,
@@ -322,7 +330,12 @@ def _get_k(input_array, box_dims):
 	For internal use.
 	'''
 	dim = len(input_array.shape)
-	if dim == 2:
+	if dim == 1:
+		x = np.arange(len(input_array))
+		center = x.max()/2.
+		kx = 2.*np.pi*(x-center)/box_dims[0]
+		return [kx], kx
+	elif dim == 2:
 		x,y = np.indices(input_array.shape, dtype='int32')
 		center = np.array([(x.max()-x.min())/2, (y.max()-y.min())/2])
 		kx = 2.*np.pi * (x-center[0])/box_dims[0]

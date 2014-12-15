@@ -115,7 +115,7 @@ def z_to_cdist(z):
     ''' Calculate the comoving distance 
 
     Parameters:
-        z (float): redshift
+        z (float or array): redshift
 
     Returns:
         Comoving distance in Mpc
@@ -132,7 +132,7 @@ def cdist_to_z(dist):
     ''' Calculate the redshift correspoding to the given redshift. 
 
     Parameters:
-        * dist (float): the distance in comoving Mpc
+        * dist (float or array): the distance in comoving Mpc
 
     Returns:
         redshift corresponding to the distance.
@@ -142,10 +142,13 @@ def cdist_to_z(dist):
             0 < z < 100 
         
     '''
-
+    dist = np.atleast_1d(dist)
+    z = np.zeros_like(dist)
     func = interp1d(precalc_table_cdist, precalc_table_z, kind='cubic')
-    z = func(dist)
-    return z
+
+    for i in range(len(dist)):
+        z[i] = func(dist[i])
+    return outputify(z)
 
 
 def angular_size(dl, z):
@@ -182,6 +185,20 @@ def angular_size_comoving(cMpc, z):
     arcsec = angular_size(pkpc, z)
     return arcsec/60./60.
 
+
+def deg_to_cdist(deg, z):
+    '''
+    Calculate the size in cMpc of an object
+    with given angular diameter.
+    
+    Parameters:
+        * deg (float or array): the size in degrees
+        * z (float or array): the redshift
+        
+    Returns:
+        The size in cMpc
+    '''
+    return deg/angular_size_comoving(1., z)
 
 
 def nu_to_z(nu21):

@@ -11,7 +11,7 @@ def calc_dt(xfrac, dens, z = -1):
 	
 	Parameters:
 		* xfrac (XfracFile object, string or numpy array): the ionization fraction
-		* dens (DensityFile object, string or numpy array): density in sim units
+		* dens (DensityFile object, string or numpy array): density in cgs units
 		* z = -1 (float): The redshift (if < 0 this will be figured out from the files)
 		
 	Returns:

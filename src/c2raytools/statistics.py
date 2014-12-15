@@ -41,14 +41,11 @@ def mass_weighted_mean_xi(xi, rho):
 
 def subtract_mean_signal(signal, los_axis):
 	'''
-	Subtract the mean of the signal along the los axis. The
-	mean is calculated for a number of slice along the los.
+	Subtract the mean of the signal along the los axis. 
 	
 	Parameters:
 		* signal (numpy array): the signal to subtract the mean from
 		* los_axis (integer): the line-of-sight axis
-		* slice_depth=1 (integer): the depth of each slice in which
-			to calculate the mean
 			
 	Returns:
 		The signal with the mean subtracted
@@ -68,6 +65,29 @@ def subtract_mean_signal(signal, los_axis):
 	return signal_out
 
                                                                
-#TODO
-#def kurtosis(x):
+def signal_overdensity(signal, los_axis):
+	'''
+	Divide by the mean of the signal along the los axis and subtract one.
+	
+	Parameters:
+		* signal (numpy array): the signal to subtract the mean from
+		* los_axis (integer): the line-of-sight axis
+			
+	Returns:
+		The signal with the mean subtracted
+		
+	TODO:vectorize 
+	'''
+	signal_out = signal.copy()
+	
+	for i in range(signal.shape[los_axis]):
+		if los_axis == 0:
+			signal_out[i,:,:] /= signal[i,:,:].mean()
+		if los_axis == 1:
+			signal_out[:,i,:] /= signal[:,i,:].mean()
+		if los_axis == 2:
+			signal_out[:,:,i] /= signal[:,:,i].mean()
+
+	return signal_out - 1.
+
 

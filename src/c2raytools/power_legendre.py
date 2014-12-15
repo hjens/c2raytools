@@ -76,9 +76,6 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
         kmax = kbins[i+1]
         idx = get_eval()('(k >= kmin) & (k < kmax)')
         idx *= good_idx
-        #--TEST---
-        #_correct_for_k_slope(ps, k, idx)
-        #-----
         if 'P0' in output:
             multipoles['P0'][i] = np.sum(ps[idx]*P0[idx])/np.sum(P0[idx]**2)
         if 'P2' in output:
@@ -89,12 +86,6 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
     
     return multipoles, kbins[:-1]+dk
 
-
-#TEST----
-def _correct_for_k_slope(ps, k, kidx):
-    slope, m = np.polyfit(k[kidx], ps[kidx], deg=1)
-    ps[kidx] += ps[kidx].mean() - (m + slope*k[kidx])
-#-----
     
     
     

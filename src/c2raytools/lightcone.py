@@ -9,6 +9,8 @@ from density_file import DensityFile
 from vel_file import VelocityFile
 import cosmology as cm
 import statistics as st
+import smoothing
+import scipy.interpolate
 
 def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None, \
                 cbin_bits = 32, cbin_order = 'c', los_axis = 0, raw_density = False, interpolation='linear'):
@@ -46,8 +48,9 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
         * raw_density (bool): if this is true, and the data is a 
             density file, the raw (simulation units) density will be returned
             instead of the density in cgs units
-        * interpolation (string): can be 'linear', 'step' or 'sigmoid'. Determines
-            how slices in between output redshifts are interpolated.
+        * interpolation (string): can be 'linear', 'step', 'sigmoid' or
+            'step_cell'. 
+            Determines how slices in between output redshifts are interpolated.
     Returns:
         (lightcone, z) tuple
         
@@ -63,7 +66,7 @@ def make_lightcone(filenames, z_low = None, z_high = None, file_redshifts = None
         the old freq_box routine.
     '''
     
-    if not interpolation in ['linear', 'step', 'sigmoid']:
+    if not interpolation in ['linear', 'step', 'sigmoid', 'step_cell']:
         raise ValueError('Unknown interpolation type: %s' % interpolation)
     
     #Figure out output redshifts, file names and size of output
@@ -210,6 +213,7 @@ def _get_output_z(file_redshifts, z_low, z_high, box_grid_n):
         z_high = file_redshifts.max()
         
     output_z = redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n)
+
     if min(output_z) < min(file_redshifts) or max(output_z) > max(file_redshifts):
         print 'Warning! You have specified a redshift range of %.3f < z < %.3f' % (min(output_z), max(output_z))
         print 'but you only have files for the range %.3f < z < %.3f.' % (min(file_redshifts), max(file_redshifts))
@@ -257,17 +261,19 @@ def redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=256, \
 
 
 def get_lightcone_subvolume(lightcone, redshifts, central_z, \
-                            depth_mhz=None, odd_num_cells=True, \
+                            depth_mhz=None, depth_mpc=None, odd_num_cells=True, \
                             subtract_mean=True):
     '''
     Extract a subvolume from a lightcone, at a given central redshift,
-    and with a given depth. 
+    and with a given depth. The depth can be specified in Mpc or MHz.
+    You must give exactly one of these parameters.
     
     Parameters:
         * ligthcone (numpy array): the lightcone
         * redshifts (numpy array): the redshifts along the LOS
         * central_z (float): the central redshift of the subvolume
         * depth_mhz (float): the depth of the subvolume in MHz
+        * depth_mpc (float): the depth of the subvolume in Mpc
         * odd_num_cells (bool): if true, the depth of the box will always 
                 be an odd number of cells. This avoids problems with 
                 power spectrum calculations.
@@ -277,10 +283,23 @@ def get_lightcone_subvolume(lightcone, redshifts, central_z, \
         Tuple with (subvolume, dims) where dims is a tuple
         with the dimensions of the subvolume in Mpc
     '''
+    
+    assert len(np.nonzero([depth_mhz, depth_mpc])) == 1
         
     central_nu = cm.z_to_nu(central_z)
-    low_z = cm.nu_to_z(central_nu+depth_mhz/2.)
-    high_z = cm.nu_to_z(central_nu-depth_mhz/2.)
+    if depth_mpc != None: #Depth is given in Mpc
+        central_dist = cm.nu_to_cdist(central_nu)
+        low_z = cm.cdist_to_z(central_dist-depth_mpc/2.)
+        high_z = cm.cdist_to_z(central_dist+depth_mpc/2.)
+    else: #Depth is given in MHz
+        low_z = cm.nu_to_z(central_nu+depth_mhz/2.)
+        high_z = cm.nu_to_z(central_nu-depth_mhz/2.)
+        
+    if low_z < redshifts.min():
+        raise Exception('Lowest z is outside range')
+    if high_z > redshifts.max():
+        raise Exception('Highest z is outside range')
+        
     low_n = int(find_idx(redshifts, low_z))
     high_n = int(find_idx(redshifts, high_z))
     
@@ -290,7 +309,7 @@ def get_lightcone_subvolume(lightcone, redshifts, central_z, \
     subbox = lightcone[:,:,low_n:high_n]
     if subtract_mean:
         subbox = st.subtract_mean_signal(subbox, los_axis=2)
-    box_depth = float(high_n-low_n)/lightcone.shape[1]*conv.LB
+    box_depth = float(subbox.shape[2])/lightcone.shape[1]*conv.LB
     box_dims = (conv.LB, conv.LB, box_depth)
     
     return subbox, box_dims
@@ -318,10 +337,44 @@ def _get_interp_slice(data_high, data_low, z_bracket_high, z_bracket_low, z, \
         beta = 2.
         g = 1./(1.+np.exp(-beta*zp))
         slice_interp = slice_low*(1.-g) + slice_high*g
+    elif interpolation == 'step_cell':
+        slice_interp = _get_step_weighted_slice(slice_low, slice_high, z_bracket_high, z_bracket_low, z)
     else:
         raise Exception('Unknown interpolation method: %s' % interpolation)
     
     return slice_interp
+
+
+def _get_step_weighted_slice(slice_low, slice_high, z_bracket_high, z_bracket_low, z):
+    '''
+    Interpolate using a step function where the step position is based
+    on the proximity to an ionized region
+    '''
+    smoothed = smoothing.smooth_gauss(slice_high, sigma=4.) 
+    diff = np.abs(slice_high-slice_low)
+    
+    #smoothed=1 means early transition. smoothed=0 means late
+    #smoothed -= changed_cells.min()
+    #smoothed /= (changed_cells.max()-changed_cells.min())
+    step_transitions = _get_step_transitions(smoothed, diff>1.e-3)
+    step_transitions = z_bracket_low + step_transitions*(z_bracket_high-z_bracket_low)
+    
+    interp_slice = slice_high.copy()
+    interp_slice[z < step_transitions] = slice_low[z < step_transitions]
+    return interp_slice
+
+
+def _get_step_transitions(cell_dist, diff_idx):
+    #Replace each value in cell_dist with the number of cells 
+    #with a lower value. Then normalize to be between 0 and 1
+    values_flat = cell_dist[diff_idx].flatten()
+    values_sorted = sorted(values_flat+np.random.random(len(values_flat))*1.e-9)
+    values_uniform = np.linspace(values_sorted[0], values_sorted[-1], len(values_sorted))
+    f = scipy.interpolate.interp1d(values_sorted, values_uniform, bounds_error=False, fill_value=0.)
+    output_values = f(cell_dist)
+    output_values -= output_values.min()
+    output_values /= output_values.max()
+    return output_values
 
 
 def _get_slice(data, idx, los_axis, slice_depth=1):
@@ -393,6 +446,7 @@ def _get_file_redshifts(redshifts_in, filenames):
         raise Exception('Invalid data for file redshifts.')
     
     return redshifts_out
+
 
 
 def _all_same(items):

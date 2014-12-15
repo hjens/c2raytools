@@ -123,7 +123,7 @@ def get_interpolated_array(in_array, new_len, kind='nearest'):
 	return out_array
 
 
-def read_cbin(filename, bits=32, order='C'):
+def read_cbin(filename, bits=32, order='C', dimensions=3):
 	''' Read a binary file with three inital integers (a cbin file).
 	
 	Parameters:
@@ -131,6 +131,7 @@ def read_cbin(filename, bits=32, order='C'):
 		* bits = 32 (integer): the number of bits in the file
 		* order = 'C' (string): the ordering of the data. Can be 'C'
 			for C style ordering, or 'F' for fortran style.
+		* dimensions (int): the number of dimensions of the data (default:3)
 			
 	Returns:
 		The data as a three dimensional numpy array.
@@ -142,12 +143,11 @@ def read_cbin(filename, bits=32, order='C'):
 	
 	print_msg('Reading cbin file: %s' % filename)
 
-	temp_mesh = np.fromfile(f,count=3,dtype='int32')
-	mesh_x, mesh_y, mesh_z = temp_mesh
+	temp_mesh = np.fromfile(f, count=dimensions, dtype='int32')
 
 	datatype = np.float32 if bits == 32 else np.float64
-	data = np.fromfile(f, dtype=datatype,count=mesh_x*mesh_y*mesh_z)
-	data = data.reshape((mesh_x, mesh_y, mesh_z), order=order)
+	data = np.fromfile(f, dtype=datatype, count=np.prod(temp_mesh))
+	data = data.reshape(temp_mesh, order=order)
 	return data
 
 

@@ -15,7 +15,7 @@ from density_file import DensityFile
 from helper_functions import print_msg, get_dens_redshifts, get_mesh_size, \
     determine_redshift_from_filename, get_data_and_type, read_cbin, save_cbin
 from temperature import calc_dt
-
+import smoothing
 
 def freq_box(xfrac_dir, dens_dir, z_low, z_high):
     ''' 
@@ -128,3 +128,6 @@ def read_binary_with_meshinfo(filename, bits=32, order='C'):
 
 def save_binary_with_meshinfo(filename, data, bits=32, order='C'):
     save_cbin(filename, data, bits, order)
+    
+def smooth(input_array, sigma):
+    return smoothing.smooth_gauss(input_array, sigma) 

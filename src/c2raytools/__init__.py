@@ -23,7 +23,6 @@ from statistics import *
 from power_spectrum import *
 from tau import *
 from lightcone import *
-from misc import *
 from pv_mpm import *
 from temperature import *
 from helper_functions import *
@@ -32,6 +31,7 @@ from plotting import *
 from power_legendre import *
 from deprecated import *
 from angular_coordinates import *
+from smoothing import *
 
 #Suppress warnings from zero-divisions and nans
 import numpy

@@ -2,7 +2,7 @@ import numpy as np
 from cosmology import angular_size
 from scipy import signal
 from helper_functions import print_msg
-from misc import gauss_kern, get_beam_w
+from smoothing import gauss_kernel, get_beam_w
 
 def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, \
 				beamshape='gaussian'):
@@ -42,7 +42,7 @@ def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, \
 	#Convolve with beam
 	if beamshape == 'gaussian':
 		sigma0 = (beam_w)/angle/(2.0 * np.sqrt(2.0*np.log(2.)))*mx
-		kernel = gauss_kern(sigma=sigma0, size=mx)
+		kernel = gauss_kernel(sigma=sigma0, size=mx)
 	else:
 		raise Exception('Unknown beamshape: %g' % beamshape)
 
