@@ -91,3 +91,36 @@ def signal_overdensity(signal, los_axis):
 	return signal_out - 1.
 
 
+def apply_func_along_los(signal, func, los_axis):
+	'''
+	Apply a function, such as np.var() or np.mean(), along
+	the line-of-sight axis of a signal on a 
+	per-slice basis.
+	
+	Parameters:
+		* signal (numpy array): the signal
+		* func (callable): the function to apply
+		* los_axis (integer): the line-of-sight axis
+		
+	Returns:
+		An array of length signal.shape[los_axis]
+		
+		
+	Example:
+		Calculate the variance of a lightcone along the 
+		line-of-sight:
+		
+		>>> lightcone = c2t.read_cbin('my_lightcone.cbin')
+		>>> dT_var = c2t.apply_func_along_los(lightcone, np.var, 2)
+		
+	'''
+	assert los_axis >= 0 and los_axis < len(signal.shape)
+	output = np.zeros(signal.shape[los_axis])
+	
+	for i in range(len(output)):
+		signal_slice = _get_slice(signal, i, los_axis)
+		output[i] = func(signal_slice)
+		
+	return output
+
+

@@ -179,6 +179,25 @@ def read_raw_binary(filename, bits=64, order='C'):
 	return data
 
 
+def save_raw_binary(filename, data, bits=64, order='C'):
+	''' Save a raw binary file with no mesh info.
+	
+	Parameters:
+		* filename (string): the filename to read from
+		* data (numpy array): the data to save
+		* bits = 64 (integer): the number of bits in the file
+		* order = 'C' (string): the ordering of the data. Can be 'C'
+			for C style ordering, or 'F' for fortran style.
+			
+	Returns:
+		The data as a three dimensional numpy array.
+	'''
+	data = data.flatten(order=order)
+	datatype = np.float32 if bits == 32 else np.float64
+	data = data.astype(datatype)
+	data.tofile(filename)
+	
+
 def save_cbin(filename, data, bits=32, order='C'):
 	''' Save a binary file with three inital integers (a cbin file).
 	

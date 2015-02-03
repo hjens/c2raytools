@@ -124,7 +124,11 @@ def physical_slice_to_angular(input_slice, z, slice_size_mpc, fov_deg, dtheta, o
     #Resample
     fov_mpc = cm.deg_to_cdist(fov_deg, z)
     cell_size_mpc = fov_mpc/(fov_deg*60./dtheta)
-    resampled_slice = resample_slice(input_slice, slice_size_mpc/cell_size_mpc, order)
+    n_cells_resampled = int(slice_size_mpc/cell_size_mpc)
+    #Avoid edge effects with even number of cells
+    if n_cells_resampled % 2 == 0: 
+        n_cells_resampled -= 1
+    resampled_slice = resample_slice(input_slice, n_cells_resampled, order)
     
     #Pad the array
     slice_n = resampled_slice.shape[0]
@@ -148,7 +152,11 @@ def angular_slice_to_physical(input_slice, z, slice_size_deg, output_cell_size, 
     '''
     #Resample
     slice_size_mpc = cm.deg_to_cdist(slice_size_deg, z)
-    resampled_slice = resample_slice(input_slice, slice_size_mpc/output_cell_size, order, prefilter)
+    n_cells_resampled = int(slice_size_mpc/output_cell_size)
+    #Avoid edge effects with even number of cells
+    if n_cells_resampled % 2 == 0: 
+        n_cells_resampled += 1
+    resampled_slice = resample_slice(input_slice, n_cells_resampled, order, prefilter)
     
     #Remove cells to get correct size
     n_cutout_cells = int(output_size_mpc/output_cell_size)# np.round(resampled_slice.shape[0]*output_size_mpc/slice_size_mpc)
@@ -207,9 +215,7 @@ def bin_lightcone_in_frequency(lightcone, z_low, box_size_mpc, dnu):
     smooth_scale = np.round(max_cell_size/cell_size)
     if smooth_scale < 1:
         smooth_scale = 1
-    #TEST
-    smooth_scale /= 2.
-    #---
+
     hf.print_msg('Smooth along LoS with scale %f' % smooth_scale)
     tophat3d = np.ones((1,1,smooth_scale))
     tophat3d /= np.sum(tophat3d)
@@ -219,18 +225,7 @@ def bin_lightcone_in_frequency(lightcone, z_low, box_size_mpc, dnu):
         nu = output_frequencies[i]
         idx = hf.find_idx(input_frequencies, nu)
         output_lightcone[:,:,i] = lightcone_smoothed[:,:,idx]
-##----
-        
-#------
-    #Bin in frequencies
-#    for i in range(output_lightcone.shape[2]):
-#        nu_low = output_frequencies[i]-dnu/2.
-#        nu_high = nu_low+dnu
-#        idx_low = np.floor(hf.find_idx(input_frequencies, nu_high))
-#        idx_high = np.ceil(hf.find_idx(input_frequencies, nu_low))
-#        output_lightcone[:,:,i] = lightcone[:,:,idx_low:idx_high].mean(axis=2)
-#------
-        
+
     return output_lightcone, output_frequencies
 
 
@@ -245,9 +240,7 @@ def bin_lightcone_in_mpc(lightcone, frequencies, cell_size_mpc):
     
     #Bin in Mpc by smoothing and indexing
     smooth_scale = np.round(len(frequencies)/n_output_cells)
-    #TEST
-    #smooth_scale /= 2.
-    #----
+
     tophat3d = np.ones((1,1,smooth_scale))
     tophat3d /= np.sum(tophat3d)
     lightcone_smoothed = scipy.signal.fftconvolve(lightcone, tophat3d, mode='same')
@@ -256,16 +249,6 @@ def bin_lightcone_in_mpc(lightcone, frequencies, cell_size_mpc):
         idx = hf.find_idx(distances, output_distances[i])
         output_lightcone[:,:,i] = lightcone_smoothed[:,:,idx]
     
-#---------
-    #Bin in Mpc
-#    for i in range(output_lightcone.shape[2]):
-#        dist_low = output_distances[i]-cell_size_mpc/2.
-#        dist_high = dist_low+cell_size_mpc
-#        idx_low = np.floor(hf.find_idx(distances, dist_low))
-#        idx_high = np.ceil(hf.find_idx(distances, dist_high))
-#        output_lightcone[:,:,i] = lightcone[:,:,idx_low:idx_high].mean(axis=2)
-#------------
-        
     output_redshifts = cm.cdist_to_z(output_distances)
         
     return output_lightcone, output_redshifts
