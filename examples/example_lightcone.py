@@ -41,11 +41,19 @@ density_lightcone, z = c2t.make_lightcone(density_files, z_low = 7.059, z_high =
 dt_lightcone = c2t.calc_dt_lightcone(xfrac_lightcone, density_lightcone, lowest_z = z.min())
 print dt_lightcone.shape
 
+#Calculate the mean dT along the line-of-sight of the lightcone
+dT_mean = c2t.apply_func_along_los(dt_lightcone, func=np.mean, los_axis=2)
+
 #Plot the dT volume
+pl.subplot(121)
 pl.imshow(dt_lightcone[0,:,:], extent=[z.min(),z.max(), 0, c2t.conv.LB], aspect='auto')
 pl.colorbar()
 pl.xlabel('$z$')
 pl.ylabel('Mpc')
+pl.subplot(122)
+pl.plot(z, dT_mean)
+pl.xlabel('Redshift')
+pl.ylabel('Mean brightness temperature')
 pl.show()
 
 pl.show()
