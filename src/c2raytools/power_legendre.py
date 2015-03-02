@@ -4,7 +4,7 @@ from power_spectrum import _get_dims, power_spectrum_nd, _get_k,\
  _get_kbins, _get_mu, get_eval, _get_nonzero_idx
 
 def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
-                               los_axis = 0, output=['P0', 'P2', 'P4'], exclude_zero_modes=False):
+                               los_axis = 0, output=['P0', 'P2', 'P4', 'nmodes'], exclude_zero_modes=False):
     '''
     Calculate the power spectrum of an array and 
     expand it in the first three Legendre polynomials.
@@ -21,9 +21,10 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
             along all dimensions. If it is an array-like, the elements are
             taken as the box length along each axis.
         * los_axis = 0 (integer): the line-of-sight axis
-        * output = ['P0', 'P2', 'P4'] (list): the multipole moments to 
+        * output = ['P0', 'P2', 'P4', 'nmodes'] (list): the multipole moments to 
             include in the output. For example, to get only the P2 moment,
-            pass in ['P2']
+            pass in ['P2']. Can also contain 'nmodes' to return the number of 
+            Fourier modes per bin
         * exlude_zero_modes = True (bool): if true, modes with any components
             of k equal to zero will be excluded.
 
@@ -40,7 +41,7 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
     #First calculate the power spectrum
     box_dims = _get_dims(box_dims, input_array.shape)
     ps = power_spectrum_nd(input_array, box_dims)
-    
+        
     #Get k values and bins
     k_comp, k = _get_k(input_array, box_dims)
     kbins = _get_kbins(kbins, box_dims, k)
@@ -71,11 +72,14 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
     if 'P4' in output:
         multipoles['P4'] = np.zeros(n_kbins)
     
+    nmodes = np.zeros(n_kbins)
+    
     for i in range(n_kbins):
         kmin = kbins[i]
         kmax = kbins[i+1]
         idx = get_eval()('(k >= kmin) & (k < kmax)')
         idx *= good_idx
+        nmodes[i] = len(np.nonzero(idx))
         if 'P0' in output:
             multipoles['P0'][i] = np.sum(ps[idx]*P0[idx])/np.sum(P0[idx]**2)
         if 'P2' in output:
@@ -83,6 +87,7 @@ def power_spectrum_multipoles(input_array, kbins = 10, box_dims = None,\
         if 'P4' in output:
             multipoles['P4'][i] = np.sum(ps[idx]*P4[idx])/np.sum(P4[idx]**2)
         
+    multipoles['nmodes'] = nmodes
     
     return multipoles, kbins[:-1]+dk
 

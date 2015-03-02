@@ -66,7 +66,8 @@ def observational_lightcone_to_physical(observational_lightcone, input_freqs, in
     Interpolate a lightcone volume measured in observational (angle/frequency)
     units into  physical (length) units. The output resolution will be set
     to the coarest one, as determined either by the angular or the frequency
-    resolution.
+    resolution. The lightcone must have the LoS as the last index, with 
+    frequencies decreasing along the LoS.
     
     Parameters:
         * observational_lightcone (numpy array): the input lightcone volume
@@ -79,6 +80,8 @@ def observational_lightcone_to_physical(observational_lightcone, input_freqs, in
         * The redshifts along the LoS of the output
         * The output cell size in Mpc
     '''
+    assert input_freqs[0] > input_freqs[-1]
+    
     #Determine new cell size - set either by frequency or angle.
     #The FoV size in Mpc is set by the lowest redshift
     dnu = input_freqs[0]-input_freqs[1]

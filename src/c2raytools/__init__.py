@@ -32,6 +32,7 @@ from power_legendre import *
 from deprecated import *
 from angular_coordinates import *
 from smoothing import *
+from power_spectrum_noise import *
 
 #Suppress warnings from zero-divisions and nans
 import numpy

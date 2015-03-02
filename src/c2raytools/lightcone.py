@@ -262,7 +262,7 @@ def redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=256, \
 
 def get_lightcone_subvolume(lightcone, redshifts, central_z, \
                             depth_mhz=None, depth_mpc=None, odd_num_cells=True, \
-                            subtract_mean=True):
+                            subtract_mean=True, fov_Mpc=None):
     '''
     Extract a subvolume from a lightcone, at a given central redshift,
     and with a given depth. The depth can be specified in Mpc or MHz.
@@ -278,6 +278,7 @@ def get_lightcone_subvolume(lightcone, redshifts, central_z, \
                 be an odd number of cells. This avoids problems with 
                 power spectrum calculations.
         * subtract_mean (bool): if true, subtract the mean of the signal
+        * fov_Mpc (float): the FoV size in Mpc
         
     Returns:
         Tuple with (subvolume, dims) where dims is a tuple
@@ -285,6 +286,9 @@ def get_lightcone_subvolume(lightcone, redshifts, central_z, \
     '''
     
     assert len(np.nonzero([depth_mhz, depth_mpc])) == 1
+    
+    if fov_Mpc == None:
+        fov_Mpc = conv.LB
         
     central_nu = cm.z_to_nu(central_z)
     if depth_mpc != None: #Depth is given in Mpc
@@ -309,8 +313,8 @@ def get_lightcone_subvolume(lightcone, redshifts, central_z, \
     subbox = lightcone[:,:,low_n:high_n]
     if subtract_mean:
         subbox = st.subtract_mean_signal(subbox, los_axis=2)
-    box_depth = float(subbox.shape[2])/lightcone.shape[1]*conv.LB
-    box_dims = (conv.LB, conv.LB, box_depth)
+    box_depth = float(subbox.shape[2])/lightcone.shape[1]*fov_Mpc
+    box_dims = (fov_Mpc, fov_Mpc, box_depth)
     
     return subbox, box_dims
 

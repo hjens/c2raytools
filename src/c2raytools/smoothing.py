@@ -4,14 +4,12 @@ import scipy.ndimage as ndimage
 import scipy.interpolate
 from scipy import signal
 
-def gauss_kernel(size, sizey=None, sigma=1.0):
+def gauss_kernel(size, sigma=1.0):
 	''' 
 	Generate a normalized gaussian kernel. 
 	
 	Parameters:
 		* size (int): Width of output array in pixels.
-		* sizey = None (int): Width along the x axis. If this
-			is set to None, sizey = size
 		* sigma = 1.0 (float): The sigma parameter for the Gaussian.
 		
 	Returns:
@@ -21,13 +19,13 @@ def gauss_kernel(size, sizey=None, sigma=1.0):
 		integral is 1.	
 	'''
 
-	size = int(size/2)
-	if not sizey:
-		sizey = size
+	if size % 2 == 0:
+		size = int(size/2)
+		x,y = np.mgrid[-size:size, -size:size]
 	else:
-		sizey = int(sizey/2)
-
-	x,y = np.mgrid[-size:size, -sizey:sizey]
+		size = int(size/2)
+		x,y = np.mgrid[-size:size+1, -size:size+1]
+	
 	g = np.exp(-(x**2 + y**2)/sigma**2)
 
 	return g/g.sum()
