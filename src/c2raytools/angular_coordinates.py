@@ -81,6 +81,7 @@ def observational_lightcone_to_physical(observational_lightcone, input_freqs, in
         * The output cell size in Mpc
     '''
     assert input_freqs[0] > input_freqs[-1]
+    assert observational_lightcone.shape[0] == observational_lightcone.shape[1]
     
     #Determine new cell size - set either by frequency or angle.
     #The FoV size in Mpc is set by the lowest redshift

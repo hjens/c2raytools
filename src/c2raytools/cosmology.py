@@ -213,6 +213,7 @@ def nu_to_z(nu21):
     '''
     return const.nu0/nu21-1
 
+
 def z_to_nu(z):
     ''' Get the 21 cm frequency that corresponds to redshift z 
 
@@ -224,6 +225,20 @@ def z_to_nu(z):
         
     '''
     return const.nu0/(1.+z)
+
+
+def nu_to_wavel(nu):
+    '''
+    Convert frequency to wavelength
+    
+    Parameters:
+        * nu (float or array): the frequency in MHz
+        
+    Returns:
+        The wavelength in meters
+    '''
+    return const.c*1.e3/(nu*1.e6)
+
 
 def nu_to_cdist(nu21):
     ''' Calculate the comoving distance to a given 21 cm frequency 
@@ -237,6 +252,7 @@ def nu_to_cdist(nu21):
     '''
     redsh = nu_to_z(nu21)
     return z_to_cdist(redsh)
+
     
 def c_to_p(z_to_cdist, z):
     '''
