@@ -51,6 +51,26 @@ def tophat_kernel(size, tophat_width):
 	return kernel
 
 
+def tophat_kernel_3d(size):
+	'''
+	Generate a 3-dimensional tophat kernel with
+	the specified size
+	
+	Parameters:
+		* size (integer or list-like): the size of
+			the tophat kernel along each dimension. If
+			size is an integer, the kernel will be cubic.
+	Returns:
+		The normalized kernel
+	'''
+	if hasattr(size, '__iter__'):
+		kernel = np.ones(size)
+	else: #Integer
+		kernel = np.ones((size, size, size))
+	kernel /= np.sum(kernel)
+	return kernel
+
+
 def lanczos_kernel(size, kernel_width):
 	'''
 	Generate a 2D Lanczos kernel.
@@ -147,9 +167,7 @@ def smooth_with_kernel(input_array, kernel):
 		The smoothed array. A numpy array with the same
 		dimensions as the input.
 	'''
-
-	assert input_array.shape[0] == input_array.shape[1]
-	assert kernel.shape == input_array.shape	
+	assert len(input_array.shape) == len(kernel.shape)
 	
 	out = signal.fftconvolve(input_array, kernel, mode='same')
 	
