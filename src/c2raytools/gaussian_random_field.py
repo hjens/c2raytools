@@ -6,7 +6,8 @@ Created on Apr 23, 2015
 
 import numpy as np
 from scipy import fftpack
-from power_spectrum import _get_dims, _get_k
+from power_spectrum import _get_dims, _get_k, power_spectrum_1d
+from scipy.interpolate import interp1d
 
 def gaussian_random_field(dims, box_dims, power_spectrum, random_seed=None):
     '''
@@ -40,7 +41,7 @@ def gaussian_random_field(dims, box_dims, power_spectrum, random_seed=None):
     box_dims = _get_dims(box_dims, map_ft_real.shape)
     assert len(box_dims) == len(dims)
     k_comp, k = _get_k(map_ft_real, box_dims)
-    k[np.abs(k) < 1.e-6] = 1.e-6
+    #k[np.abs(k) < 1.e-6] = 1.e-6
     
     #Scale factor
     boxvol = np.product(map(float,box_dims))
@@ -56,3 +57,35 @@ def gaussian_random_field(dims, box_dims, power_spectrum, random_seed=None):
     #Return real part
     map_real = np.real(map_ift)
     return map_real
+
+
+def gaussian_random_field_like_field(input_field, box_dims, random_seed=None):
+    '''
+    Generate a Gaussian random field with the same power spectrum as the
+    input field.
+    
+    Parameters: 
+        * input_field (numpy array): The field to take the power spectrum
+            from
+        * box_dims (float or tuple): The dimensions of the input_field in cMpc
+        * random_seed (int): the seed for the random number generation
+        
+    Returns:
+        A Gaussian random field with the same dimensions and power spectrum
+        as the input field
+    '''
+    
+    ps_input, k_input, n_modes = power_spectrum_1d(input_field, box_dims=box_dims, kbins=30, return_n_modes=True)
+    ps_k = interp1d(k_input[n_modes>0], ps_input[n_modes>0], kind='linear', \
+                    bounds_error=False, fill_value=0.)
+    random_field = gaussian_random_field(input_field.shape, box_dims, \
+                                        power_spectrum=ps_k, random_seed=random_seed)
+    return random_field
+    
+    
+    
+    
+    
+    
+    
+    
