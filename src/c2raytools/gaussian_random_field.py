@@ -21,7 +21,7 @@ def gaussian_random_field(dims, box_dims, power_spectrum, random_seed=None):
         * power_spectrum (callable, one parameter): the desired 
             spherically-averaged power spectrum of the output.
             Given as a function of k
-        * random_seed (int): if given, 
+        * random_seed (int): the seed for the random number generation
             
     Returns:
         The Gaussian random field as a numpy array
