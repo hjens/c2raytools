@@ -9,7 +9,7 @@ from scipy import fftpack
 from power_spectrum import _get_dims, _get_k, power_spectrum_1d
 from scipy.interpolate import interp1d
 
-def gaussian_random_field(dims, box_dims, power_spectrum, random_seed=None):
+def make_gaussian_random_field(dims, box_dims, power_spectrum, random_seed=None):
     '''
     Generate a Gaussian random field with the specified
     power spectrum.
@@ -59,7 +59,7 @@ def gaussian_random_field(dims, box_dims, power_spectrum, random_seed=None):
     return map_real
 
 
-def gaussian_random_field_like_field(input_field, box_dims, random_seed=None):
+def make_gaussian_random_field_like_field(input_field, box_dims, random_seed=None):
     '''
     Generate a Gaussian random field with the same power spectrum as the
     input field.
@@ -75,17 +75,21 @@ def gaussian_random_field_like_field(input_field, box_dims, random_seed=None):
         as the input field
     '''
     
-    ps_input, k_input, n_modes = power_spectrum_1d(input_field, box_dims=box_dims, kbins=30, return_n_modes=True)
-    ps_k = interp1d(k_input[n_modes>0], ps_input[n_modes>0], kind='linear', \
-                    bounds_error=False, fill_value=0.)
-    random_field = gaussian_random_field(input_field.shape, box_dims, \
+    ps_k = _get_ps_func_for_field(input_field, box_dims)
+    random_field = make_gaussian_random_field(input_field.shape, box_dims, \
                                         power_spectrum=ps_k, random_seed=random_seed)
     return random_field
     
     
-    
-    
-    
+def _get_ps_func_for_field(input_field, box_dims):
+    '''
+    Return ps(k) for the specified field. For internal use.
+    '''
+    ps_input, k_input, n_modes = power_spectrum_1d(input_field, \
+                            box_dims=box_dims, kbins=10, return_n_modes=True)
+    ps_k = interp1d(k_input[n_modes>0], ps_input[n_modes>0], kind='linear', \
+                    bounds_error=False, fill_value=0.)
+    return ps_k
     
     
     
