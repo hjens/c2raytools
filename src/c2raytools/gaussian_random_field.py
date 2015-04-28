@@ -73,6 +73,10 @@ def make_gaussian_random_field_like_field(input_field, box_dims, random_seed=Non
     Returns:
         A Gaussian random field with the same dimensions and power spectrum
         as the input field
+        
+    .. note::
+        This function is experimental. There are often interpolation issues
+        at low k. Use with care.
     '''
     
     ps_k = _get_ps_func_for_field(input_field, box_dims)
