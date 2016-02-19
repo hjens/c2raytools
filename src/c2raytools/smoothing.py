@@ -3,6 +3,10 @@ import const
 import scipy.ndimage as ndimage
 import scipy.interpolate
 from scipy import signal
+from scipy.fftpack import fft, ifft, fftn, ifftn
+from numpy.fft import rfftn, irfftn
+from math import ceil
+from numpy import array, asarray, rank, roll
 
 def gauss_kernel(size, sigma=1.0, fwhm=None):
 	''' 
@@ -176,7 +180,7 @@ def smooth_with_kernel(input_array, kernel):
 	'''
 	assert len(input_array.shape) == len(kernel.shape)
 	
-	out = signal.fftconvolve(input_array, kernel, mode='same')
+	out = fftconvolve_(input_array, kernel)
 	
 	return out
 
@@ -262,6 +266,61 @@ def interpolate2d(input_array, x, y, order=0):
 									order=order, prefilter=True)
 	
 	return new_array
+
+def fftconvolve_(in1, in2):
+    """Convolve two N-dimensional arrays using FFT.
+
+    Convolve `in1` and `in2` using the fast Fourier transform method, with
+    the output size determined by the `mode` argument.
+
+    This is generally much faster than `convolve` for large arrays (n > ~500),
+    but can be slower when only a few output values are needed, and can only
+    output float arrays (int or object array inputs will be cast to float).
+
+    Parameters
+    ----------
+    in1 : array_like
+        First input.
+    in2 : array_like
+        Second input. Should have the same number of dimensions as `in1`;
+        if sizes of `in1` and `in2` are not equal then `in1` has to be the
+        larger array.
+
+    Returns
+    -------
+    out : array
+        An N-dimensional array containing a subset of the discrete linear
+        convolution of `in1` with `in2`.
+
+    """
+    in1 = asarray(in1)
+    in2 = asarray(in2)
+
+    if rank(in1) == rank(in2) == 0:  # scalar inputs
+        return in1 * in2
+    elif not in1.ndim == in2.ndim:
+        raise ValueError("in1 and in2 should have the same rank")
+    elif in1.size == 0 or in2.size == 0:  # empty arrays
+        return array([])
+
+    s1 = np.array(in1.shape)
+    s2 = np.array(in2.shape)
+    complex_result = (np.issubdtype(in1.dtype, np.complex) or
+                      np.issubdtype(in2.dtype, np.complex))
+
+    fsize = s1
+
+    fslice = tuple([slice(0, int(sz)) for sz in fsize])
+    if not complex_result:
+        ret = irfftn(rfftn(in1, fsize) *
+                     rfftn(in2, fsize), fsize)[fslice].copy()
+        ret = ret.real
+    else:
+        ret = ifftn(fftn(in1, fsize) * fftn(in2, fsize))[fslice].copy()
+
+    shift = array([int(ceil(fsize[0]/2.0)-1.0), int(ceil(fsize[1]/2.0)-1.0)])
+    ret   = roll(roll(ret, -shift[0], axis=0), -shift[1], axis=1)
+    return ret
 
 
 
