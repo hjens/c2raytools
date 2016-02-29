@@ -5,7 +5,7 @@ import scipy.interpolate
 from scipy import signal
 from scipy.fftpack import fft, ifft, fftn, ifftn
 from numpy.fft import rfftn, irfftn
-from math import ceil
+from math import ceil, floor
 from numpy import array, asarray, rank, roll
 
 def gauss_kernel(size, sigma=1.0, fwhm=None):
@@ -318,7 +318,7 @@ def fftconvolve_(in1, in2):
     else:
         ret = ifftn(fftn(in1, fsize) * fftn(in2, fsize))[fslice].copy()
 
-    shift = array([int(ceil(fsize[0]/2.0)-1.0), int(ceil(fsize[1]/2.0)-1.0)])
+    shift = array([int(floor(fsize[0]/2.0)), int(floor(fsize[1]/2.0))])
     ret   = roll(roll(ret, -shift[0], axis=0), -shift[1], axis=1)
     return ret
 
