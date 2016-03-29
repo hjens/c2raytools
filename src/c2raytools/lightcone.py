@@ -262,7 +262,7 @@ def redshifts_at_equal_comoving_distance(z_low, z_high, box_grid_n=256, \
 
 def get_lightcone_subvolume(lightcone, redshifts, central_z, \
                             depth_mhz=None, depth_mpc=None, odd_num_cells=True, \
-                            subtract_mean=True, fov_Mpc=None):
+                            subtract_mean=False, fov_Mpc=None):
     '''
     Extract a subvolume from a lightcone, at a given central redshift,
     and with a given depth. The depth can be specified in Mpc or MHz.
@@ -277,7 +277,7 @@ def get_lightcone_subvolume(lightcone, redshifts, central_z, \
         * odd_num_cells (bool): if true, the depth of the box will always 
                 be an odd number of cells. This avoids problems with 
                 power spectrum calculations.
-        * subtract_mean (bool): if true, subtract the mean of the signal
+        * subtract_mean (bool): if true, subtract the mean of the signal (Default: False)
         * fov_Mpc (float): the FoV size in Mpc
         
     Returns:
