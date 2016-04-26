@@ -14,7 +14,7 @@ import conv
 import helper_functions as hf
 import smoothing
 import const
-import scipy.signal
+from helper_functions import fftconvolve
 
 
 def physical_lightcone_to_observational(physical_lightcone, input_z_low, output_dnu, output_dtheta, input_box_size_mpc=None):
@@ -223,7 +223,7 @@ def bin_lightcone_in_frequency(lightcone, z_low, box_size_mpc, dnu):
     hf.print_msg('Smooth along LoS with scale %f' % smooth_scale)
     tophat3d = np.ones((1,1,smooth_scale))
     tophat3d /= np.sum(tophat3d)
-    lightcone_smoothed = scipy.signal.fftconvolve(lightcone, tophat3d, mode='same')
+    lightcone_smoothed = fftconvolve(lightcone, tophat3d, mode='same')
     
     for i in range(output_lightcone.shape[2]):
         nu = output_frequencies[i]
@@ -247,7 +247,7 @@ def bin_lightcone_in_mpc(lightcone, frequencies, cell_size_mpc):
 
     tophat3d = np.ones((1,1,smooth_scale))
     tophat3d /= np.sum(tophat3d)
-    lightcone_smoothed = scipy.signal.fftconvolve(lightcone, tophat3d, mode='same')
+    lightcone_smoothed = fftconvolve(lightcone, tophat3d, mode='same')
     
     for i in range(output_lightcone.shape[2]):
         idx = hf.find_idx(distances, output_distances[i])

@@ -2,7 +2,8 @@ import numpy as np
 from cosmology import angular_size
 from scipy import signal
 from helper_functions import print_msg
-from smoothing import gauss_kernel, get_beam_w, fftconvolve_
+from smoothing import gauss_kernel, get_beam_w
+from helper_functions import fftconvolve
 
 def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, \
 				beamshape='gaussian'):
@@ -47,7 +48,7 @@ def beam_convolve(input_array, z, fov_mpc, beam_w = None, max_baseline = None, \
 		raise Exception('Unknown beamshape: %g' % beamshape)
 
 	#out =  signal.fftconvolve(input_array, kernel)
-	out =  fftconvolve_(input_array, kernel)
+	out =  fftconvolve(input_array, kernel)
 
 	#fftconvolve makes the output twice the size, so return only the central part	
 	ox = out.shape[0]
