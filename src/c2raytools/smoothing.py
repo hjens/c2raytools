@@ -108,19 +108,24 @@ def lanczos_kernel(size, kernel_width):
 	return kernel
 
 
-def smooth_gauss(input_array, sigma):
+def smooth_gauss(input_array, sigma=1.0, fwhm=None):
 	''' 
-	Smooth the input array with a Gaussian kernel.
+	Smooth the input array with a Gaussian kernel specified either by
+        sigma (standard deviation of the Gaussian function) or FWHM (Full 
+        Width Half Maximum). The latter is more appropriate when considering
+        the resolution of a telescope.
 	
 	Parameters:
 		* input_array (numpy array): the array to smooth
-		* sigma (float): the width of the kernel
+		* sigma=1.0 (float): the width of the kernel (variance)
+		* fwhm = None (float or None): The full width at half maximum.
+				If this parameter is given, it overrides sigma.
 
 	Returns:
 		The smoothed array. A numpy array with the same
 		dimensions as the input.
 	'''
-	kernel = gauss_kernel(input_array.shape[0], sigma=sigma)
+	kernel = gauss_kernel(input_array.shape[0], sigma=sigma, fwhm=fwhm)
 	return smooth_with_kernel(input_array, kernel)
 
 
