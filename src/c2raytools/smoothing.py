@@ -1,5 +1,7 @@
 import numpy as np
 import const
+import conv
+import cosmology as cm
 import scipy.ndimage as ndimage
 import scipy.interpolate
 from scipy import signal
@@ -7,7 +9,7 @@ from scipy.fftpack import fft, ifft, fftn, ifftn
 from numpy.fft import rfftn, irfftn
 from math import ceil, floor
 from numpy import array, asarray, rank, roll
-from helper_functions import fftconvolve
+from helper_functions import fftconvolve, find_idx
 
 def gauss_kernel(size, sigma=1.0, fwhm=None):
 	''' 
@@ -273,6 +275,52 @@ def interpolate2d(input_array, x, y, order=0):
 	
 	return new_array
 
+def smooth_lightcone(lightcone, z_low, box_size_mpc=False, max_baseline=2.):
+	"""
+	This smooths in both angular and frequency direction assuming both to be smoothed by same scale.
+
+	Parameters:
+		* lightcone (numpy array): The lightcone that is to be smoothed.
+		* z_low (float): The lowest value of the redshift in the lightcone.
+		* box_size_mpc (float): The box size in Mpc. Default value is determined from 
+					the box size set for the simulation (set_sim_constants)
+		* max_baseline (float): The maximun baseline of the telescope in km. Default value 
+					is set as 2 km (LOFAR).
+
+	Returns:
+		* (Smoothed_lightcone, redshifts) 
+	"""
+	if (~box_size_mpc): box_size_mpc=conv.LB
+	cell_size = 1.0*box_size_mpc/lightcone.shape[0]	
+	distances = cm.z_to_cdist(z_low) + np.arange(lightcone.shape[2])*cell_size
+	input_redshifts = cm.cdist_to_z(distances)
+	output_dtheta  = (1+input_redshifts)*21e-5/max_baseline
+	output_ang_res = output_dtheta*cm.z_to_cdist(input_redshifts)
+	output_dz      = output_ang_res/const.c
+	for i in xrange(len(output_dz)):
+		output_dz[i] = output_dz[i] * hubble_parameter(input_redshifts[i])
+
+	output_lightcone = np.zeros(lightcone.shape)
+	for i in xrange(output_lightcone.shape[2]):
+		output_lightcone[:,:,i] = smooth_gauss(output_lightcone[:,:,i], fwhm=output_ang_res[i])
+
+	for i in xrange(output_lightcone.shape[2]):
+		z_out_low  = input_redshifts[i]-output_dz[i]/2
+		z_out_high = input_redshifts[i]+output_dz[i]/2
+		if i==0:idx_low = np.ceil(find_idx(input_redshifts, z_out_low))
+		else:	idx_low = idx_high
+		idx_high = np.ceil(find_idx(input_redshifts, z_out_high))
+		output_lightcone[:,:,i] = np.mean(lightcone[:,:,idx_low:idx_high+1], axis=2)
+
+	return output_lightcone, input_redshifts
+
+
+def hubble_parameter(z):
+	"""
+	It calculates the Hubble parameter at any redshift.
+	"""
+	part = np.sqrt(const.Omega0*(1.+z)**3+const.lam)
+	return const.H0 * part
 
 
 
