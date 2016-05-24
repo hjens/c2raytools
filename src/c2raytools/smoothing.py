@@ -275,7 +275,7 @@ def interpolate2d(input_array, x, y, order=0):
 	
 	return new_array
 
-def smooth_lightcone(lightcone, z_low, box_size_mpc=False, max_baseline=2.):
+def smooth_lightcone(lightcone, z_low, box_size_mpc=False, max_baseline=2., ratio=1):
 	"""
 	This smooths in both angular and frequency direction assuming both to be smoothed by same scale.
 
@@ -286,6 +286,8 @@ def smooth_lightcone(lightcone, z_low, box_size_mpc=False, max_baseline=2.):
 					the box size set for the simulation (set_sim_constants)
 		* max_baseline (float): The maximun baseline of the telescope in km. Default value 
 					is set as 2 km (LOFAR).
+		* ratio (int): It is the ratio of smoothing scale in frequency direction and 
+                                        the angular direction (Default value: 1).
 
 	Returns:
 		* (Smoothed_lightcone, redshifts) 
@@ -296,7 +298,7 @@ def smooth_lightcone(lightcone, z_low, box_size_mpc=False, max_baseline=2.):
 	input_redshifts = cm.cdist_to_z(distances)
 	output_dtheta  = (1+input_redshifts)*21e-5/max_baseline
 	output_ang_res = output_dtheta*cm.z_to_cdist(input_redshifts)
-	output_dz      = output_ang_res/const.c
+	output_dz      = ratio*output_ang_res/const.c
 	for i in xrange(len(output_dz)):
 		output_dz[i] = output_dz[i] * hubble_parameter(input_redshifts[i])
 
