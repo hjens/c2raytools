@@ -303,8 +303,6 @@ def smooth_lightcone(lightcone, z_low, box_size_mpc=False, max_baseline=2., rati
 		output_dz[i] = output_dz[i] * hubble_parameter(input_redshifts[i])
 
 	output_lightcone = np.zeros(lightcone.shape)
-	for i in xrange(output_lightcone.shape[2]):
-		output_lightcone[:,:,i] = smooth_gauss(output_lightcone[:,:,i], fwhm=output_ang_res[i])
 
 	for i in xrange(output_lightcone.shape[2]):
 		z_out_low  = input_redshifts[i]-output_dz[i]/2
@@ -313,6 +311,9 @@ def smooth_lightcone(lightcone, z_low, box_size_mpc=False, max_baseline=2., rati
 		else:	idx_low = idx_high
 		idx_high = np.ceil(find_idx(input_redshifts, z_out_high))
 		output_lightcone[:,:,i] = np.mean(lightcone[:,:,idx_low:idx_high+1], axis=2)
+
+	for i in xrange(output_lightcone.shape[2]):
+		output_lightcone[:,:,i] = smooth_gauss(output_lightcone[:,:,i], fwhm=output_ang_res[i])
 
 	return output_lightcone, input_redshifts
 
