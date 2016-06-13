@@ -275,7 +275,7 @@ def interpolate2d(input_array, x, y, order=0):
 	
 	return new_array
 
-def smooth_lightcone(lightcone, z_low, box_size_mpc=False, max_baseline=2., ratio=1):
+def smooth_lightcone(lightcone, z_array, box_size_mpc=False, max_baseline=2., ratio=1.):
 	"""
 	This smooths in both angular and frequency direction assuming both to be smoothed by same scale.
 
@@ -293,30 +293,58 @@ def smooth_lightcone(lightcone, z_low, box_size_mpc=False, max_baseline=2., rati
 		* (Smoothed_lightcone, redshifts) 
 	"""
 	if (~box_size_mpc): box_size_mpc=conv.LB
-	cell_size = 1.0*box_size_mpc/lightcone.shape[0]	
-	distances = cm.z_to_cdist(z_low) + np.arange(lightcone.shape[2])*cell_size
-	input_redshifts = cm.cdist_to_z(distances)
-	output_dtheta  = (1+input_redshifts)*21e-5/max_baseline
-	output_ang_res = output_dtheta*cm.z_to_cdist(input_redshifts)
-	output_dz      = ratio*output_ang_res/const.c
-	for i in xrange(len(output_dz)):
-		output_dz[i] = output_dz[i] * hubble_parameter(input_redshifts[i])
+        if(z_array.shape[0] == lightcone.shape[2]):
+                input_redshifts = z_array.copy()
+        else:
+                z_low = z_array
+                cell_size = 1.0*box_size_mpc/lightcone.shape[0]
+                distances = cm.z_to_cdist(z_low) + np.arange(lightcone.shape[2])*cell_size
+                input_redshifts = cm.cdist_to_z(distances)
 
-	output_lightcone = np.zeros(lightcone.shape)
-
-	for i in xrange(output_lightcone.shape[2]):
-		z_out_low  = input_redshifts[i]-output_dz[i]/2
-		z_out_high = input_redshifts[i]+output_dz[i]/2
-		if i==0:idx_low = np.ceil(find_idx(input_redshifts, z_out_low))
-		else:	idx_low = idx_high
-		idx_high = np.ceil(find_idx(input_redshifts, z_out_high))
-		output_lightcone[:,:,i] = np.mean(lightcone[:,:,idx_low:idx_high+1], axis=2)
-
-	for i in xrange(output_lightcone.shape[2]):
-		output_lightcone[:,:,i] = smooth_gauss(output_lightcone[:,:,i], fwhm=output_ang_res[i])
-
+        output_dtheta  = (1+input_redshifts)*21e-5/max_baseline
+        output_ang_res = output_dtheta*cm.z_to_cdist(input_redshifts)
+        output_dz      = ratio*output_ang_res/const.c
+        for i in xrange(len(output_dz)):
+                output_dz[i] = output_dz[i] * hubble_parameter(input_redshifts[i])
+        output_lightcone = smooth_lightcone_tophat(lightcone, input_redshifts, output_dz)
+        output_lightcone = smooth_lightcone_gauss(output_lightcone, output_ang_res)
 	return output_lightcone, input_redshifts
 
+def smooth_coeval(cube, z, max_baseline=2., ratio=1.):
+        output_dtheta  = (1+z)*21e-5/max_baseline
+        output_ang_res = output_dtheta*cm.z_to_cdist(z)
+        output_cube = smooth_coeval_tophat(cube, output_ang_res*ratio)
+        output_cube = smooth_coeval_gauss(output_cube, output_ang_res)
+        return output_cube
+
+def smooth_coeval_tophat(cube, width):
+        kernel = tophat_kernel(cube.shape[2], width)
+        output_cube = np.zeros(cube.shape)
+        for i in xrange(cube.shape[0]):
+                output_cube[i,:,:] = smooth_with_kernel(cube[i,:,:], kernel)
+        return output_cube
+
+def smooth_coeval_gauss(cube, fwhm):
+        one = np.ones(cube.shape[2])
+        output_cube = smooth_lightcone_gauss(cube, fwhm*one)
+        return output_cube
+
+def smooth_lightcone_tophat(lightcone, redshifts, dz):
+        output_lightcone = np.zeros(lightcone.shape)
+        for i in xrange(output_lightcone.shape[2]):
+                z_out_low  = redshifts[i]-dz[i]/2
+                z_out_high = redshifts[i]+dz[i]/2
+                idx_low  = np.ceil(find_idx(redshifts, z_out_low))
+                idx_high = np.ceil(find_idx(redshifts, z_out_high))
+                output_lightcone[:,:,i] = np.mean(lightcone[:,:,idx_low:idx_high+1], axis=2)
+        return output_lightcone
+
+def smooth_lightcone_gauss(lightcone,fwhm):
+        assert lightcone.shape[2] == len(fwhm)
+        output_lightcone = np.zeros(lightcone.shape)
+        for i in xrange(output_lightcone.shape[2]):
+                output_lightcone[:,:,i] = smooth_gauss(lightcone[:,:,i], fwhm=fwhm[i])
+        return output_lightcone
 
 def hubble_parameter(z):
 	"""
