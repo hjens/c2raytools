@@ -310,9 +310,26 @@ def smooth_lightcone(lightcone, z_array, box_size_mpc=False, max_baseline=2., ra
         output_lightcone = smooth_lightcone_gauss(output_lightcone, output_ang_res*lightcone.shape[0]/box_size_mpc)
 	return output_lightcone, input_redshifts
 
-def smooth_coeval(cube, z, max_baseline=2., ratio=1.):
+def smooth_coeval(cube, z, box_size_mpc=False, max_baseline=2., ratio=1.):
+	"""
+	This smooths the coeval cube by Gaussian in angular direction and by tophat along the third axis.
+
+	Parameters:
+		* lightcone (numpy array): The lightcone that is to be smoothed.
+		* z (float)           : The redshift of the coeval cube.
+		* box_size_mpc (float): The box size in Mpc. Default value is determined from 
+					the box size set for the simulation (set_sim_constants)
+		* max_baseline (float): The maximun baseline of the telescope in km. Default value 
+					is set as 2 km (LOFAR).
+		* ratio (int): It is the ratio of smoothing scale in frequency direction and 
+                                        the angular direction (Default value: 1).
+
+	Returns:
+		* Smoothed_coeval_cube
+	"""
+	if (~box_size_mpc): box_size_mpc=conv.LB	
         output_dtheta  = (1+z)*21e-5/max_baseline
-        output_ang_res = output_dtheta*cm.z_to_cdist(z) * cube.shape[0]/c2t.conv.LB
+        output_ang_res = output_dtheta*cm.z_to_cdist(z) * cube.shape[0]/box_size_mpc
         output_cube = smooth_coeval_tophat(cube, output_ang_res*ratio)
         output_cube = smooth_coeval_gauss(output_cube, output_ang_res)
         return output_cube
