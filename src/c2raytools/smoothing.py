@@ -307,12 +307,12 @@ def smooth_lightcone(lightcone, z_array, box_size_mpc=False, max_baseline=2., ra
         for i in xrange(len(output_dz)):
                 output_dz[i] = output_dz[i] * hubble_parameter(input_redshifts[i])
         output_lightcone = smooth_lightcone_tophat(lightcone, input_redshifts, output_dz)
-        output_lightcone = smooth_lightcone_gauss(output_lightcone, output_ang_res)
+        output_lightcone = smooth_lightcone_gauss(output_lightcone, output_ang_res*lightcone.shape[0]/box_size_mpc)
 	return output_lightcone, input_redshifts
 
 def smooth_coeval(cube, z, max_baseline=2., ratio=1.):
         output_dtheta  = (1+z)*21e-5/max_baseline
-        output_ang_res = output_dtheta*cm.z_to_cdist(z)
+        output_ang_res = output_dtheta*cm.z_to_cdist(z) * cube.shape[0]/c2t.conv.LB
         output_cube = smooth_coeval_tophat(cube, output_ang_res*ratio)
         output_cube = smooth_coeval_gauss(output_cube, output_ang_res)
         return output_cube
