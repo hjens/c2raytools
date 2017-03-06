@@ -281,13 +281,13 @@ def smooth_lightcone(lightcone, z_array, box_size_mpc=False, max_baseline=2., ra
 
 	Parameters:
 		* lightcone (numpy array): The lightcone that is to be smoothed.
-		* z_low (float): The lowest value of the redshift in the lightcone.
-		* box_size_mpc (float): The box size in Mpc. Default value is determined from 
-					the box size set for the simulation (set_sim_constants)
-		* max_baseline (float): The maximun baseline of the telescope in km. Default value 
-					is set as 2 km (LOFAR).
-		* ratio (int): It is the ratio of smoothing scale in frequency direction and 
-                                        the angular direction (Default value: 1).
+		* z_array (float)        : The lowest value of the redshift in the lightcone or the whole redshift array.
+		* box_size_mpc (float)   : The box size in Mpc. Default value is determined from 
+					   the box size set for the simulation (set_sim_constants)
+		* max_baseline (float)   : The maximun baseline of the telescope in km. Default value 
+					   is set as 2 km (LOFAR).
+		* ratio (int)            : It is the ratio of smoothing scale in frequency direction and 
+                                           the angular direction (Default value: 1).
 
 	Returns:
 		* (Smoothed_lightcone, redshifts) 
