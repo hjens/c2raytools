@@ -292,7 +292,7 @@ def smooth_lightcone(lightcone, z_array, box_size_mpc=False, max_baseline=2., ra
 	Returns:
 		* (Smoothed_lightcone, redshifts) 
 	"""
-	if (~box_size_mpc): box_size_mpc=conv.LB
+	if (not box_size_mpc): box_size_mpc=conv.LB
         if(z_array.shape[0] == lightcone.shape[2]):
                 input_redshifts = z_array.copy()
         else:
