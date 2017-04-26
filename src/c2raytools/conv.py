@@ -23,7 +23,7 @@ def set_sim_constants(boxsize_cMpc):
 	
 	Parameters:
 		* boxsize_cMpc (float): the box size in cMpc/h
-		Valid values are 37, 47, 64, 114, 244, 425 or 500
+		Valid values are 37, 47, 64, 114, 200, 244, 425 or 500
 		
 	Returns:
 		Nothing.
@@ -52,6 +52,9 @@ def set_sim_constants(boxsize_cMpc):
 		nbox_fine = 8000
 	elif hf.flt_comp(boxsize, 47.):
 		hf.print_msg('Setting_conversion_factors for 47/h Mpc box')
+		nbox_fine = 3456
+	elif hf.flt_comp(boxsize, 200.):
+		hf.print_msg('Setting_conversion_factors for 200/h Mpc box')
 		nbox_fine = 3456
 	else:
 		raise Exception('Invalid boxsize (%.3f cMpc)' % boxsize_cMpc)
