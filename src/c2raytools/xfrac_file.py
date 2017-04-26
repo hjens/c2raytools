@@ -30,7 +30,8 @@ class XfracFile:
 		if filename:
 			self.read_from_file(filename, old_format)
 
-	def read_from_file(self, filename, old_format=False):
+	def read_from_file(self, filename, old_format=False, neutral=False,
+                           binary_format=False):
 		'''
 		Read data from file.
 		
@@ -38,6 +39,8 @@ class XfracFile:
 			* filename (string): the file to read from.
 			* old_format = False (bool): whether to use the old-style (32 bits)
 				file format.
+                        * neutral = False (bool): whether the content is the neutral or ionized fraction
+                        * binary_format = False (bool): whether the file is in Fortran unformatted or binary (no record separators) format 
 		Returns:
 			Nothing
 		'''
@@ -45,14 +48,21 @@ class XfracFile:
 		self.filename = filename
 
 		f = open(filename, 'rb')
-		temp_mesh = np.fromfile(f, count=6, dtype='int32')
-		self.mesh_x, self.mesh_y, self.mesh_z = temp_mesh[1:4]
+                if binary_format:
+                        temp_mesh = np.fromfile(f, count=3, dtype='int32')
+                        self.mesh_x, self.mesh_y, self.mesh_z = temp_mesh[0:2]
+                else
+                        temp_mesh = np.fromfile(f, count=6, dtype='int32')
+                        self.mesh_x, self.mesh_y, self.mesh_z = temp_mesh[1:4]
 
 		if old_format:
 			self.xi = np.fromfile(f, dtype='float32')
 		else:
 			self.xi = np.fromfile(f, dtype='float64')
 		self.xi = self.xi.reshape((self.mesh_x, self.mesh_y, self.mesh_z), order='F')
+
+		if neutral:
+                        self.xi = 1.0-self.xi
 
 		f.close()
 		print_msg('...done')
