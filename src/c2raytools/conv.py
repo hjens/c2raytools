@@ -5,9 +5,9 @@ import numpy as np
 import helper_functions as hf
 
 #Conversion factors and other stuff relating to C2Ray simulations
-boxsize=114.0
+boxsize=244.0
 LB=boxsize/const.h
-nbox_fine=6144
+nbox_fine=8000
 
 M_box      = const.rho_matter*(LB*const.Mpc)**3 # mass in box (g, not M0)
 M_grid     = M_box/(float(nbox_fine)**3)
