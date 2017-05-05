@@ -51,7 +51,7 @@ class XfracFile:
                 if binary_format:
                         temp_mesh = np.fromfile(f, count=3, dtype='int32')
                         self.mesh_x, self.mesh_y, self.mesh_z = temp_mesh[0:2]
-                else
+                else:
                         temp_mesh = np.fromfile(f, count=6, dtype='int32')
                         self.mesh_x, self.mesh_y, self.mesh_z = temp_mesh[1:4]
 
