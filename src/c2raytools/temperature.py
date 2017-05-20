@@ -109,7 +109,7 @@ def calc_dt_lightcone(xfrac, dens, lowest_z, los_axis = 2):
 	z = cosmology.cdist_to_z(cdist)
 	return _dt(dens, xfrac, z)
 
-def calc_dt_full_lightcone(xfrac, temp, dens, lowest_z, los_axis = 2):
+def calc_dt_full_lightcone(xfrac, temp, dens, lowest_z, los_axis = 2, correct=True):
 	'''
 	Calculate the differential brightness temperature assuming only that Lyman alpha is fully coupled so T_s = T_k
     (NOT T_s >> T_CMB) for lightcone data. UNTESTED
@@ -117,13 +117,15 @@ def calc_dt_full_lightcone(xfrac, temp, dens, lowest_z, los_axis = 2):
 	Parameters:
 		* xfrac (string or numpy array): the name of the ionization 
 			fraction file (must be cbin), or the xfrac lightcone data
-        * temp (string or numpy array): the name of the temperature
-            file (must be cbin), or the temp lightcone data
+                * temp (string or numpy array): the name of the temperature
+                       file (must be cbin), or the temp lightcone data
 		* dens (string or numpy array): the name of the density 
 			file (must be cbin), or the density data
 		* lowest_z (float): the lowest redshift of the lightcone volume
 		* los_axis = 2 (int): the line-of-sight axis
-		
+		* correct = True (bool): if true include a correction for 
+                        partially ionized cells.
+
 	Returns:
 		The differential brightness temperature as a numpy array with
 		the same dimensions as xfrac.
@@ -148,7 +150,7 @@ def calc_dt_full_lightcone(xfrac, temp, dens, lowest_z, los_axis = 2):
 	cdist = np.arange(xfrac.shape[los_axis])*cell_size + cdist_low
 	z = cosmology.cdist_to_z(cdist)
         print "Redshift: ", str(z)
-	return _dt_full(dens, xfrac,temp, z)
+	return _dt_full(dens, xfrac,temp, z, correct)
 
 def mean_dt(z):
 	'''
