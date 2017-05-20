@@ -36,7 +36,7 @@ def calc_dt(xfrac, dens, z = -1):
 	#Calculate dT
 	return _dt(rho, xi, z)
 
-def calc_dt_full(xfrac, temp, dens, z = -1):
+def calc_dt_full(xfrac, temp, dens, z = -1, correct=True):
 	'''
 	Calculate the differential brightness temperature assuming only that Lyman alpha is fully coupled so T_s = T_k
     (NOT T_s >> T_CMB)
@@ -46,7 +46,8 @@ def calc_dt_full(xfrac, temp, dens, z = -1):
         * temp (TemperFile object, string or numpy array): the temperature in K
 		* dens (DensityFile object, string or numpy array): density in cgs units
 		* z = -1 (float): The redshift (if < 0 this will be figured out from the files)
-		
+		* correct = True (bool): if true include a correction for partially ionized cells.
+
 	Returns:
 		The differential brightness temperature as a numpy array with
 		the same dimensions as xfrac.
@@ -72,7 +73,7 @@ def calc_dt_full(xfrac, temp, dens, z = -1):
 	
 	#Calculate dT
         print "calculating corrected dbt"
-	return _dt_full_corrected(dens,xfrac,temp,z)#rho, Ts, xi, z)
+	return _dt_full_corrected(dens,xfrac,temp,z,correct)#rho, Ts, xi, z)
 
 def calc_dt_lightcone(xfrac, dens, lowest_z, los_axis = 2):
 	'''
@@ -189,36 +190,54 @@ def _dt_full(rho, xi, Ts, z):
 	
 	return dt
 	
-def _dt_full_corrected(rho, xi, Ts, z):
+def _dt_full_corrected(rho, xi, Ts, z, correct):
         z = np.mean(z)
         print "Redshift: " +str(z) +'\n'
         rho_mean = const.rho_crit_0*const.OmegaB
-        Tcmb = 2.725*(1+z) # might want to add to cosmology.py instead
+        Tcmb = Tcmb0*(1+z) # might want to add to cosmology.py instead
         Cdt = mean_dt(z)
 
-        zi = 1089
-        Tcmb0=2.726
-        Ti=Tcmb0*(1+zi)
-        T_HII=2.0e4
-        T_min = Ti*(1+z)**2/(1+zi)**2
-#        print T_min
-        ones=np.ones(250**3,dtype=float).reshape(250,250,250)
-#        print z
-        #print type(z),type(Ts.temper), type(T_min), type(T_HII), type(xi)
-        for i in range(len(xi[:,1,1])):
-            for j in range(len(xi[1,:,1])):
-                for k in range(len(xi[1,1,:])):
-                    Ts.temper[i,j,k] = max(T_min,(Ts.temper[i,j,k]-xi[i,j,k]*T_HII)/(1.-xi[i,j,k]))
-                        
- #       print np.mean(Ts.temper)
-#        Ts.temper = (Ts.temper-xi*T_HII)/(ones-xi)
-        if np.any(Ts.temper < 0):
-            print "WARNING: negative temperatures"
-#        print type(Ts),type(Tcmb),type(Cdt),type(xi),type(rho)
+        if correct:
+                # Correct the kinetic temperature in partially ionized cells.
+                
+                # Find the temperature at a reference redshift zi and assume
+                # adiabatic cooling since then to find the minimum temperature
+                # at the redshift of interest.
+                # Original code use the recombination redshift (z=1089) but
+                # since Compton scattering couples kinetic and CMB temperature
+                # up to z=200 (approximately), it is better to use z=200 as a
+                # reference.
+                # To do: check this against CMBFAST or similar code.
+                zi = 200 #1089
+                Ti=Tcmb0*(1+zi)
+                T_min = Ti*(1+z)**2/(1+zi)**2
+                # print T_min
+                # Assume the kinetic temperature in ionized regions to be
+                # some fixed value 
+                T_HII=2.0e4
+        
+                ones=np.ones(250**3,dtype=float).reshape(250,250,250)
+                #print type(z),type(Ts.temper), type(T_min), type(T_HII), type(xi)
+                # Calculate the temperature of the neutral medium in a cell by
+                # assuming that the ionized part of the cell is fully ionized
+                # (so a fraction xi of the cell's volume is ionized) and that
+                # the temperature of the ionized part is T_HII
+                for i in range(len(xi[:,1,1])):
+                        for j in range(len(xi[1,:,1])):
+                                for k in range(len(xi[1,1,:])):
+                                        Ts.temper[i,j,k] = max(T_min,(Ts.temper[i,j,k]-xi[i,j,k]*T_HII)/(1.-xi[i,j,k]))
 
+                    
+                                        # print np.mean(Ts.temper)
+                                        # Ts.temper = (Ts.temper-xi*T_HII)/(ones-xi)
+                                        if np.any(Ts.temper < 0):
+                                                print "WARNING: negative temperatures"
+                                                # print type(Ts),type(Tcmb),type(Cdt),type(xi),type(rho)
+
+
+        # Calculate the differential temperature brightness
         dt = ((Ts.temper-Tcmb)/Ts.temper)*Cdt*(1.0-xi)*rho/rho_mean  #extra term for temperature fluctuations as Ts is not much greater than Tcmb, Hannah Ross
         #dt = ((Ts-Tcmb)/Ts)*Cdt*(1.0-xi.xi)*rho.cgs_density/rho_mean  #extra term for temperature fluctuations as Ts is not much greater than Tcmb, Hannah Ross
-#       dt = (1+Tcmb/Ts)*Cdt*(1.0-xi)*rho/rho_mean
 
         return dt
 
