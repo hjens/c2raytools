@@ -180,7 +180,7 @@ def _dt(rho, xi, z):
 def _dt_full(rho, xi, Ts, z):
         print "Redshift: " +str(z) +'\n'
 	rho_mean = const.rho_crit_0*const.OmegaB
-        Tcmb = 2.725*(1+z) # might want to add to cosmology.py instead
+        Tcmb = Tcmb0*(1+z) # might want to add to cosmology.py instead
 	Cdt = mean_dt(z)
         print type(Ts),type(Tcmb),type(Cdt),type(xi),type(rho)
         dt = ((Ts.temper-Tcmb)/Ts.temper)*Cdt*(1.0-xi)*rho/rho_mean  #extra term for temperature fluctuations as Ts is not much greater than Tcmb, Hannah Ross
