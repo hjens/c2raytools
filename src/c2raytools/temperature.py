@@ -73,7 +73,7 @@ def calc_dt_full(xfrac, temp, dens, z = -1, correct=True):
 	
 	#Calculate dT
         print "calculating corrected dbt"
-	return _dt_full_corrected(dens,xfrac,temp,z,correct)#rho, Ts, xi, z)
+	return _dt_full(dens,xfrac,temp,z,correct)#rho, Ts, xi, z)
 
 def calc_dt_lightcone(xfrac, dens, lowest_z, los_axis = 2):
 	'''
@@ -148,7 +148,7 @@ def calc_dt_full_lightcone(xfrac, temp, dens, lowest_z, los_axis = 2):
 	cdist = np.arange(xfrac.shape[los_axis])*cell_size + cdist_low
 	z = cosmology.cdist_to_z(cdist)
         print "Redshift: ", str(z)
-	return _dt_full_corrected(dens, xfrac,temp, z)
+	return _dt_full(dens, xfrac,temp, z)
 
 def mean_dt(z):
 	'''
@@ -178,19 +178,7 @@ def _dt(rho, xi, z):
 	
 	return dt
 
-def _dt_full(rho, xi, Ts, z):
-        print "Redshift: " +str(z) +'\n'
-	rho_mean = const.rho_crit_0*const.OmegaB
-        Tcmb = Tcmb0*(1+z) # might want to add to cosmology.py instead
-	Cdt = mean_dt(z)
-        print type(Ts),type(Tcmb),type(Cdt),type(xi),type(rho)
-        dt = ((Ts.temper-Tcmb)/Ts.temper)*Cdt*(1.0-xi)*rho/rho_mean  #extra term for temperature fluctuations as Ts is not much greater than Tcmb, Hannah Ross
-        #dt = ((Ts-Tcmb)/Ts)*Cdt*(1.0-xi.xi)*rho.cgs_density/rho_mean  #extra term for temperature fluctuations as Ts is not much greater than Tcmb, Hannah Ross
-#	dt = (1+Tcmb/Ts)*Cdt*(1.0-xi)*rho/rho_mean
-	
-	return dt
-	
-def _dt_full_corrected(rho, xi, Ts, z, correct):
+def _dt_full(rho, xi, Ts, z, correct):
         z = np.mean(z)
         print "Redshift: " +str(z) +'\n'
         rho_mean = const.rho_crit_0*const.OmegaB
