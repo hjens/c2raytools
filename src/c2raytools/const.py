@@ -27,6 +27,7 @@ H0cgs = H0*1e5/Mpc
 rho_crit_0 = 3.0*H0cgs*H0cgs/(8.0*np.pi*G_grav)
 q0 = 0.5*Omega0- lam
 rho_matter = rho_crit_0*Omega0  
+Tcmb0=2.725
 
 #Redshift dependent Hubble parameter, km/s/Mpc
 Hz = lambda z: H0*np.sqrt(Omega0*(1.0+z)**3.+lam) 

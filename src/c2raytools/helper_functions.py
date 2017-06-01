@@ -283,10 +283,14 @@ def determine_filetype(filename):
 		return 'xfrac'
 	elif 'n_all' in filename:
 		return 'density'
+        elif 'Temper' in filename:
+                return 'temper'
 	elif 'v_all' in filename:
 		return 'velocity'
 	elif '.cbin' in filename:
 		return 'cbin'
+        elif 'dbt' in filename:
+                return 'dbt'
 	return 'unknown'
 
 
@@ -313,9 +317,12 @@ def get_data_and_type(indata, cbin_bits=32, cbin_order='c', raw_density=False):
 	'''
 	import c2raytools.density_file
 	import c2raytools.xfrac_file
+        import c2raytools.temper_file
 
 	if isinstance(indata, c2raytools.xfrac_file.XfracFile):
 		return indata.xi, 'xfrac'
+        elif isinstance(indata, c2raytools.temper_file.TemperFile):
+		return indata.temper, 'temper'
 	elif isinstance(indata, c2raytools.density_file.DensityFile):
 		if raw_density:
 			return indata.raw_density, 'density'
@@ -325,11 +332,15 @@ def get_data_and_type(indata, cbin_bits=32, cbin_order='c', raw_density=False):
 		filetype = determine_filetype(indata)
 		if filetype == 'xfrac':
 			return get_data_and_type(c2raytools.xfrac_file.XfracFile(indata))
+                elif filetype == 'temper':
+			return get_data_and_type(c2raytools.temper_file.TemperFile(indata))
 		elif filetype == 'density':
 			return get_data_and_type(c2raytools.density_file.DensityFile(indata))
 		elif filetype == 'cbin':
 			return read_cbin(indata, bits=cbin_bits, \
 											order=cbin_order), 'cbin'
+                elif filetype == 'dbt':
+                        return np.load(indata),'dbt'
 		else:
 			raise Exception('Unknown file type')
 	elif isinstance(indata, np.ndarray):
@@ -353,10 +364,15 @@ def get_mesh_size(filename):
 	if datatype == 'xfrac':
 		temp_mesh = np.fromfile(f, count=6, dtype='int32')
 		mesh_size = temp_mesh[1:4]
+        elif datatype == 'temper':
+                temp_mesh = np.fromfile(f,count=3,dtype='int32')
+                mesh_size = temp_mesh[1:4]
 	elif datatype == 'density':
 		mesh_size = np.fromfile(f,count=3,dtype='int32')
 	elif datatype == 'cbin':
 		mesh_size = np.fromfile(f,count=3,dtype='int32')
+        elif datatype == 'dbt':
+                mesh_size = np.array([250,250,250])
 	else:
 		raise Exception('Could not determine mesh for filetype %s' % datatype)
 	f.close()
