@@ -139,7 +139,8 @@ def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None, return_n_modes=F
 			taken as the box length along each axis.
 		* return_n_modes = False (bool): if true, also return the
 			number of modes in each bin
-		* binning = 'log' : It defines the type of binning in k-space. The other option is 'linear'.
+		* binning = 'log' : It defines the type of binning in k-space. The other option is 
+				    'linear' or 'mixed'.
 			
 	Returns: 
 		A tuple with (Pk, bins), where Pk is an array with the 
@@ -173,7 +174,8 @@ def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dim
 			taken as the box length along each axis.
 		* return_n_modes = False (bool): if true, also return the
 			number of modes in each bin
-		* binning = 'log' : It defines the type of binning in k-space. The other option is 'linear'.
+		* binning = 'log' : It defines the type of binning in k-space. The other option is 
+				    'linear' or 'mixed'.
 			
 	Returns: 
 		A tuple with (Pk, bins), where Pk is an array with the 
@@ -388,7 +390,11 @@ def _get_kbins(kbins, box_dims, k, binning='log'):
 	if isinstance(kbins,int):
 		kmin = 2.*np.pi/min(box_dims)
 		if binning=='linear': kbins = np.linspace(kmin, k.max(), kbins+1)
-		else: kbins = 10**np.linspace(np.log10(kmin), np.log10(k.max()), kbins+1)
+		elif binning=='log': kbins = 10**np.linspace(np.log10(kmin), np.log10(k.max()), kbins+1)
+		else:
+			kbins_low  = np.linspace(kmin, k.max(), kbins+1)
+			kbins_high = 10**np.linspace(np.log10(kmin), np.log10(k.max()), kbins+1)
+			kbins = np.hstack((kbins_low[kbins_low<0.1],kbins_high[kbins_high>0.1]))		
 	return kbins
 
 
