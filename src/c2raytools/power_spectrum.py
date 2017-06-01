@@ -84,7 +84,7 @@ def cross_power_spectrum_nd(input_array1, input_array2, box_dims):
 	return power_spectrum
 
 
-def radial_average(input_array, box_dims, kbins=10):
+def radial_average(input_array, box_dims, kbins=10, binning='log'):
 	'''
 	Radially average data. Mostly for internal use.
 	
@@ -108,7 +108,7 @@ def radial_average(input_array, box_dims, kbins=10):
 
 	k_comp, k = _get_k(input_array, box_dims)
 
-	kbins = _get_kbins(kbins, box_dims, k)
+	kbins = _get_kbins(kbins, box_dims, k, binning=binning)
 	
 	#Bin the data
 	print_msg('Binning data...')
@@ -123,7 +123,7 @@ def radial_average(input_array, box_dims, kbins=10):
 	return outdata, kbins[:-1]+dk, n_modes
 	
 
-def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None, return_n_modes=False):
+def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None, return_n_modes=False, binning='log'):
 	''' Calculate the spherically averaged power spectrum of an array 
 	and return it as a one-dimensional array.
 	
@@ -139,6 +139,7 @@ def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None, return_n_modes=F
 			taken as the box length along each axis.
 		* return_n_modes = False (bool): if true, also return the
 			number of modes in each bin
+		* binning = 'log' : It defines the type of binning in k-space. The other option is 'linear'.
 			
 	Returns: 
 		A tuple with (Pk, bins), where Pk is an array with the 
@@ -149,13 +150,13 @@ def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None, return_n_modes=F
 
 	input_array = power_spectrum_nd(input_array_nd, box_dims=box_dims)	
 
-	ps, bins, n_modes = radial_average(input_array, kbins=kbins, box_dims=box_dims)
+	ps, bins, n_modes = radial_average(input_array, kbins=kbins, box_dims=box_dims, binning=binning)
 	if return_n_modes:
 		return ps, bins, n_modes
 	return ps, bins
 
 
-def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dims=None, return_n_modes=False):
+def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dims=None, return_n_modes=False, binning='log'):
 	''' Calculate the spherically averaged cross power spectrum of two arrays 
 	and return it as a one-dimensional array.
 	
@@ -172,6 +173,7 @@ def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dim
 			taken as the box length along each axis.
 		* return_n_modes = False (bool): if true, also return the
 			number of modes in each bin
+		* binning = 'log' : It defines the type of binning in k-space. The other option is 'linear'.
 			
 	Returns: 
 		A tuple with (Pk, bins), where Pk is an array with the 
@@ -182,7 +184,7 @@ def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dim
 
 	input_array = cross_power_spectrum_nd(input_array1_nd, input_array2_nd, box_dims=box_dims)	
 
-	ps, bins, n_modes = radial_average(input_array, kbins=kbins, box_dims = box_dims)
+	ps, bins, n_modes = radial_average(input_array, kbins=kbins, box_dims = box_dims, binning=binning)
 	if return_n_modes:
 		return ps, bins, n_modes
 	return ps, bins
@@ -266,7 +268,7 @@ def cross_power_spectrum_mu(input_array1, input_array2, los_axis = 0, mubins=20,
 
 
 def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims=None, weights=None,
-			exclude_zero_modes=True):
+			exclude_zero_modes=True, binning='log'):
 	'''
 	This function is for internal use only.
 	'''
@@ -281,7 +283,7 @@ def mu_binning(powerspectrum, los_axis = 0, mubins=20, kbins=10, box_dims=None, 
 	mu = _get_mu(k_comp, k, los_axis)
 
 	#Calculate k values, and make k bins
-	kbins = _get_kbins(kbins, box_dims, k)
+	kbins = _get_kbins(kbins, box_dims, k, binning=binning)
 	dk = (kbins[1:]-kbins[:-1])/2.
 	n_kbins = len(kbins)-1
 		
@@ -378,14 +380,15 @@ def _get_mu(k_comp, k, los_axis):
 	return mu
 
 
-def _get_kbins(kbins, box_dims, k):
+def _get_kbins(kbins, box_dims, k, binning='log'):
 	'''
 	Make a list of bin edges if kbins is an integer,
 	otherwise return it as it is.
 	'''
 	if isinstance(kbins,int):
 		kmin = 2.*np.pi/min(box_dims)
-		kbins = 10**np.linspace(np.log10(kmin), np.log10(k.max()), kbins+1)
+		if binning=='linear': kbins = np.linspace(kmin, k.max(), kbins+1)
+		else: kbins = 10**np.linspace(np.log10(kmin), np.log10(k.max()), kbins+1)
 	return kbins
 
 
