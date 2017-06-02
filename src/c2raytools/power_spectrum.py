@@ -84,7 +84,7 @@ def cross_power_spectrum_nd(input_array1, input_array2, box_dims):
 	return power_spectrum
 
 
-def radial_average(input_array, box_dims, kbins=10, binning='log'):
+def radial_average(input_array, box_dims, kbins=10, binning='log', breakpoint=0.1):
 	'''
 	Radially average data. Mostly for internal use.
 	
@@ -108,7 +108,7 @@ def radial_average(input_array, box_dims, kbins=10, binning='log'):
 
 	k_comp, k = _get_k(input_array, box_dims)
 
-	kbins = _get_kbins(kbins, box_dims, k, binning=binning)
+	kbins = _get_kbins(kbins, box_dims, k, binning=binning, breakpoint=breakpoint)
 	
 	#Bin the data
 	print_msg('Binning data...')
@@ -123,7 +123,7 @@ def radial_average(input_array, box_dims, kbins=10, binning='log'):
 	return outdata, kbins[:-1]+dk, n_modes
 	
 
-def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None, return_n_modes=False, binning='log'):
+def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None, return_n_modes=False, binning='log', breakpoint=0.1):
 	''' Calculate the spherically averaged power spectrum of an array 
 	and return it as a one-dimensional array.
 	
@@ -151,13 +151,13 @@ def power_spectrum_1d(input_array_nd, kbins=100, box_dims=None, return_n_modes=F
 
 	input_array = power_spectrum_nd(input_array_nd, box_dims=box_dims)	
 
-	ps, bins, n_modes = radial_average(input_array, kbins=kbins, box_dims=box_dims, binning=binning)
+	ps, bins, n_modes = radial_average(input_array, kbins=kbins, box_dims=box_dims, binning=binning, breakpoint=breakpoint)
 	if return_n_modes:
 		return ps, bins, n_modes
 	return ps, bins
 
 
-def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dims=None, return_n_modes=False, binning='log'):
+def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dims=None, return_n_modes=False, binning='log',breakpoint=0.1):
 	''' Calculate the spherically averaged cross power spectrum of two arrays 
 	and return it as a one-dimensional array.
 	
@@ -186,7 +186,7 @@ def cross_power_spectrum_1d(input_array1_nd, input_array2_nd, kbins=100, box_dim
 
 	input_array = cross_power_spectrum_nd(input_array1_nd, input_array2_nd, box_dims=box_dims)	
 
-	ps, bins, n_modes = radial_average(input_array, kbins=kbins, box_dims = box_dims, binning=binning)
+	ps, bins, n_modes = radial_average(input_array, kbins=kbins, box_dims = box_dims, binning=binning, breakpoint=breakpoint)
 	if return_n_modes:
 		return ps, bins, n_modes
 	return ps, bins
@@ -382,7 +382,7 @@ def _get_mu(k_comp, k, los_axis):
 	return mu
 
 
-def _get_kbins(kbins, box_dims, k, binning='log'):
+def _get_kbins(kbins, box_dims, k, binning='log', breakpoint=0.1):
 	'''
 	Make a list of bin edges if kbins is an integer,
 	otherwise return it as it is.
@@ -394,7 +394,7 @@ def _get_kbins(kbins, box_dims, k, binning='log'):
 		else:
 			kbins_low  = np.linspace(kmin, k.max(), kbins+1)
 			kbins_high = 10**np.linspace(np.log10(kmin), np.log10(k.max()), kbins+1)
-			kbins = np.hstack((kbins_low[kbins_low<0.1],kbins_high[kbins_high>0.1]))		
+			kbins = np.hstack((kbins_low[kbins_low<breakpoint],kbins_high[kbins_high>breakpoint]))		
 	return kbins
 
 
