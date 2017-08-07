@@ -412,6 +412,24 @@ def _get_dims(box_dims, ashape):
 		return [box_dims]*len(ashape)
 	return box_dims
 
+def dimensionless_ps(data, kbins=100, box_dims=None, binning='log', factor=10):
+	'''
+	Parameters
+	----------
+	data    : The numpy data whose power spectrum is to be determined.
+	kbins   : Number of bins for in the k-space (Default: 100).
+	box_dims: The size of the box in Mpc (Default: Takes the value from the set_sim_constants).
+	binning : The type of binning to be used for the k-space (Default: 'log').
+	factor  : The factor multiplied to the given kbins to smooth the spectrum from (Default: 10).
+	Return
+	----------
+	(\Delta^2, ks)
+	'''
+        Pk, ks = c2t.power_spectrum_1d(data, kbins=kbins*factor, box_dims=box_dims, binning=binning)
+        ks_new = np.array([ks[factor*(i+0.5)] for i in xrange(kbins)])
+        k3Pk   = ks**3*Pk
+        k3Pk_  = np.array([k3Pk[factor*i:factor*(i+1)].mean() for i in xrange(kbins)])
+        return k3Pk_/2/np.pi**2, ks_new
 
 def _get_nonzero_idx(ps_shape, los_axis):
 	'''
