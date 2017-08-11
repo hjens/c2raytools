@@ -8,6 +8,7 @@ import glob
 import os.path
 import time
 from numpy import array, asarray, rank, roll
+from numpy.linalg import matrix_rank
 from scipy.fftpack import fft, ifft, fftn, ifftn
 from numpy.fft import rfftn, irfftn
 from math import ceil, floor
@@ -532,7 +533,7 @@ def fftconvolve(in1, in2):
     in1 = asarray(in1)
     in2 = asarray(in2)
 
-    if rank(in1) == rank(in2) == 0:  # scalar inputs
+    if matrix_rank(in1) == matrix_rank(in2) == 0:  # scalar inputs
         return in1 * in2
     elif not in1.ndim == in2.ndim:
         raise ValueError("in1 and in2 should have the same rank")
