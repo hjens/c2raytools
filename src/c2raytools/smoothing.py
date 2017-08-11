@@ -285,7 +285,7 @@ def smooth_lightcone(lightcone, z_array, box_size_mpc=False, max_baseline=2., ra
 		* box_size_mpc (float)   : The box size in Mpc. Default value is determined from 
 					   the box size set for the simulation (set_sim_constants)
 		* max_baseline (float)   : The maximun baseline of the telescope in km. Default value 
-					   is set as 2 km (LOFAR).
+					   is set as 2 km (SKA core).
 		* ratio (int)            : It is the ratio of smoothing scale in frequency direction and 
                                            the angular direction (Default value: 1).
 
@@ -315,14 +315,14 @@ def smooth_coeval(cube, z, box_size_mpc=False, max_baseline=2., ratio=1., nu_axi
 	This smooths the coeval cube by Gaussian in angular direction and by tophat along the third axis.
 
 	Parameters:
-		* lightcone (numpy array): The lightcone that is to be smoothed.
-		* z (float)           : The redshift of the coeval cube.
-		* box_size_mpc (float): The box size in Mpc. Default value is determined from 
-					the box size set for the simulation (set_sim_constants)
-		* max_baseline (float): The maximun baseline of the telescope in km. Default value 
-					is set as 2 km (LOFAR).
-		* ratio (int): It is the ratio of smoothing scale in frequency direction and 
-                                        the angular direction (Default value: 1).
+		* coeval_cube (numpy array): The lightcone that is to be smoothed.
+		* z (float)                : The redshift of the coeval cube.
+		* box_size_mpc (float)     : The box size in Mpc. Default value is determined from 
+					     the box size set for the simulation (set_sim_constants)
+		* max_baseline (float)     : The maximun baseline of the telescope in km. Default value 
+					     is set as 2 km (SKA core).
+		* ratio (int)              : It is the ratio of smoothing scale in frequency direction and 
+                                             the angular direction (Default value: 1).
 
 	Returns:
 		* Smoothed_coeval_cube
