@@ -56,10 +56,10 @@ def tophat_kernel(size, tophat_width):
 	Returns:
 		The kernel as a (size,size) array
 	'''
-	kernel = np.zeros((size,size))
-	center = kernel.shape[0]/2
-	idx_low = center-np.floor(tophat_width/2.)
-	idx_high = center+np.ceil(tophat_width/2.)
+	kernel   = np.zeros((size,size))
+	center   = kernel.shape[0]/2
+	idx_low  = int(center-np.floor(tophat_width/2.))
+	idx_high = int(center+np.ceil(tophat_width/2.))
 	kernel[idx_low:idx_high, idx_low:idx_high] = 1.
 	kernel /= np.sum(kernel)
 	return kernel
@@ -355,8 +355,8 @@ def smooth_lightcone_tophat(lightcone, redshifts, dz):
         for i in xrange(output_lightcone.shape[2]):
                 z_out_low  = redshifts[i]-dz[i]/2
                 z_out_high = redshifts[i]+dz[i]/2
-                idx_low  = np.ceil(find_idx(redshifts, z_out_low))
-                idx_high = np.ceil(find_idx(redshifts, z_out_high))
+                idx_low  = int(np.ceil(find_idx(redshifts, z_out_low)))
+                idx_high = int(np.ceil(find_idx(redshifts, z_out_high)))
                 output_lightcone[:,:,i] = np.mean(lightcone[:,:,idx_low:idx_high+1], axis=2)
         return output_lightcone
 
