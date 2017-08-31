@@ -36,15 +36,15 @@ def calc_dt(xfrac, dens, z = -1):
 	#Calculate dT
 	return _dt(rho, xi, z)
 
-def calc_dt_full(xfrac, temp, dens, z = -1, correct=True):
+def calc_dt_full(xfrac, dens, temp, z = -1, correct=True):
 	'''
 	Calculate the differential brightness temperature assuming only that Lyman alpha is fully coupled so T_s = T_k
     (NOT T_s >> T_CMB)
 	
 	Parameters:
 		* xfrac (XfracFile object, string or numpy array): the ionization fraction
-        * temp (TemperFile object, string or numpy array): the temperature in K
 		* dens (DensityFile object, string or numpy array): density in cgs units
+        	* temp (TemperFile object, string or numpy array): the temperature in K
 		* z = -1 (float): The redshift (if < 0 this will be figured out from the files)
 		* correct = True (bool): if true include a correction for partially ionized cells.
 
