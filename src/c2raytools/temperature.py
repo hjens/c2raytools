@@ -183,7 +183,7 @@ def _dt_full(rho, xi, Ts, z, correct):
         z = np.mean(z)
         print "Redshift:" , str(z)
         rho_mean = const.rho_crit_0*const.OmegaB
-        Tcmb 	 = const.Tcmb0*(1+z) # might want to add to cosmology.py instead
+        Tcmb 	 = const.Tcmb0*(1+z) 
         Cdt      = mean_dt(z)
 
         if correct:
@@ -207,10 +207,6 @@ def _dt_full(rho, xi, Ts, z, correct):
                 # assuming that the ionized part of the cell is fully ionized
                 # (so a fraction xi of the cell's volume is ionized) and that
                 # the temperature of the ionized part is T_HII
-                #for i in range(len(xi[:,1,1])):
-                #        for j in range(len(xi[1,:,1])):
-                #                for k in range(len(xi[1,1,:])):
-                #                        Ts.temper[i,j,k] = max(T_min,(Ts.temper[i,j,k]-xi[i,j,k]*T_HII)/(1.-xi[i,j,k]))
 		Ts_new = Ts-xi*T_HII/(1.-xi)
 		Ts_new[Ts_new < T_min] = T_min
                 if np.any(Ts_new < 0): print "WARNING: negative temperatures"
