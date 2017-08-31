@@ -53,21 +53,18 @@ def calc_dt_full(xfrac, temp, dens, z = -1, correct=True):
 		the same dimensions as xfrac.
 	'''
 
-	xi, xi_type = get_data_and_type(xfrac)
-        Ts, Ts_type = get_data_and_type(temp)
+	xi, xi_type   = get_data_and_type(xfrac)
+        Ts, Ts_type   = get_data_and_type(temp)
 	rho, rho_type = get_data_and_type(dens)
-	xi = xi.astype('float64')
-        Ts = Ts.astype('float64')
+	xi  = xi.astype('float64')
+        Ts  = Ts.astype('float64')
 	rho = rho.astype('float64')
 	
 	if z < 0:
 		z = determine_redshift_from_filename(xfrac)
-		if z < 0:
-			z = determine_redshift_from_filename(dens)
-                        if z < 0:
-                		z=determine_redshift_from_filename(temp)
-				if z < 0:
-					raise Exception('No redshift specified. Could not determine from file.')
+		if z < 0: z = determine_redshift_from_filename(dens)
+		if z < 0: z = determine_redshift_from_filename(temp)
+		if z < 0: raise Exception('No redshift specified. Could not determine from file.')
 	
 	print_msg('Making full dT box for z=%f' % z)
 	
