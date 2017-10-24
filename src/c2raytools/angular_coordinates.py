@@ -14,7 +14,7 @@ import conv
 import helper_functions as hf
 import smoothing
 import const
-from helper_functions import fftconvolve
+from scipy.signal import fftconvolve
 
 
 def physical_lightcone_to_observational(physical_lightcone, input_z_low, output_dnu, output_dtheta, input_box_size_mpc=None):
