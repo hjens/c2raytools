@@ -5,7 +5,7 @@ A simple Python module for reading and analyzing data from C2Ray and CubeP3M dat
 
 See the examples directory for some examples of basic usage.
 
-For documentation, look [here](http://ttt.astro.su.se/~hjens/c2raytools/).
+For documentation, look [here](http://ttt.astro.su.se/~garrelt/c2raytools/build).
 
 Installation
 -------------
